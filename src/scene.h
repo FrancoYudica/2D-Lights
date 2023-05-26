@@ -9,8 +9,14 @@ struct Material
 {
     Color<float> emission;
     float emission_intensity;
+    float reflectivity;
 
     Material() : emission(0.0f), emission_intensity(0.0f) {}
+    Material(Color<float> emission) : emission(emission), emission_intensity(1.0f) {}
+    Material(Color<float> emission, float intensity) : emission(emission), emission_intensity(intensity) {}
+    Material(Color<float> emission, float intensity, float reflectivity)
+     : emission(emission), emission_intensity(intensity), reflectivity(reflectivity) {}
+
 
 };
 
@@ -29,7 +35,7 @@ class Scene
 {
     public:
         Scene() = default;
-        virtual Nearest sdf(Vec2 p) { return {}; }
+        virtual Nearest sdf(Vec2 p) const { return {}; }
 };
 
 

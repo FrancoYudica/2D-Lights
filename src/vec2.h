@@ -2,8 +2,6 @@
 #ifndef VEC2_H
 #define VEC2_H
 #include <math.h>
-#include <random>
-#define PI 3.141592653589794626433832
 
 struct Vec2
 {
@@ -18,13 +16,7 @@ struct Vec2
         static float length(Vec2 vec) { return std::sqrt(vec.x * vec.x + vec.y * vec.y); }
         static float length_squared(Vec2 vec) {return vec.x * vec.x + vec.y * vec.y; }
         static Vec2 normalize(Vec2 vec) {return vec * (1.0f / length(vec)); }
-        static Vec2 random()
-        {
-            float angle = 2.0f * PI * static_cast<float>(std::rand()) / RAND_MAX;
-            return {cos(angle), sin(angle)};
-        }
-
-        Vec2 dot(Vec2 other) { return *this * other; }
+        static float dot(Vec2 a, Vec2 b) {return a.x * b.x + a.y * b.y; }
 
         // Operator overloading
         Vec2 operator +(const Vec2& other)

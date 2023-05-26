@@ -75,6 +75,19 @@ struct Color
             a -= other.a;
         }
 
+        Color<T> operator *(const Color& other)
+        {
+            return {r * other.r, g * other.g, b * other.b, a * other.a};
+        }
+        
+        void operator *=(const Color& other)
+        {
+            r *= other.r;
+            g *= other.g;
+            b *= other.b;
+            a *= other.a;
+        }
+
         Color<T> operator*(float value)
         {
             return {value * r, value *b, value *g, value *a};
@@ -86,6 +99,19 @@ struct Color
             g *= value;
             b *= value;
             a *= value;
+        }
+
+        Color<T> operator/(float value)
+        {
+            return {value / r, value /b, value /g, value /a};
+        }   
+
+        void operator/=(float value)
+        {
+            r /= value;
+            g /= value;
+            b /= value;
+            a /= value;
         }
 };
 

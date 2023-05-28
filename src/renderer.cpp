@@ -1,6 +1,7 @@
 #include <iostream>
 #include "renderer.h"
 #include "utils.h"
+#include "sdf_functions.h"
 #include <execution>
 
 void Renderer::render()
@@ -75,9 +76,9 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
 
     for (uint32_t i = 0; i < 64; i++)
     {
-        Nearest nearest = scene->sdf(origin);
+        Nearest nearest = sdf(origin);
         Material& material = nearest.mtl;
-        if (nearest.distance < 1e-3f)
+        if (nearest.distance < 1e-4f)
         {
             // Adds the intensity
             Color color = material.emission * material.emission_intensity;
@@ -85,8 +86,12 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
             // If the material is reflective
             if (depth < config.max_recursion_depth && material.reflectivity > 0.0f)
             {
-                constexpr float OFFSET = 1e-2f;
-                Vec2 normal = Utils::normal(origin, scene);
+
+                if (nearest.distance < 0.0f)
+                    return color;
+
+                constexpr float OFFSET = 1e-3f;
+                Vec2 normal = this->normal(origin);
                 Vec2 reflected = Utils::reflect(direction, normal);
                 Vec2 reflected_origin = reflected * OFFSET + origin;
 
@@ -110,4 +115,13 @@ Color<float> Renderer::_sample(Vec2 uv, uint32_t sample_index)
     
     Color color = _ray_march(origin, direction);
     return color;
+}
+
+Vec2 Renderer::normal(Vec2 p)
+{
+    constexpr float epsilon = 0.001f;
+    return {
+        (sdf({p.x + epsilon, p.y}).distance - sdf({p.x - epsilon, p.y}).distance) * 0.5f / epsilon,
+        (sdf({p.x, p.y + epsilon}).distance - sdf({p.x, p.y - epsilon}).distance) * 0.5f / epsilon
+    };
 }

@@ -19,6 +19,25 @@ namespace SDF
         return max(d1, -d2);
     }
 
+    static float smooth_t(float d1, float d2, float k)
+    {
+        return clamp(0.5f + 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
+    }
+
+    static float combine_union_s(float d1, float d2, float k)
+    {
+        // Smooth union
+        float h = smooth_t(d1, d2, k);
+        return mix(d2, d1, h) - k * h * (1.0f - h);
+    }
+
+    static float combine_subtract_s(float d1, float d2, float k)
+    {
+        // Smooth subtract
+        float h = smooth_t(d1, d2, k);
+        return mix(d2, -d1, h) - k * h * (1.0f - h);
+    }
+
     static float circle(Vec2 pos, Vec2 center, float radius)
     {
         return Vec2::length(pos - center) - radius;

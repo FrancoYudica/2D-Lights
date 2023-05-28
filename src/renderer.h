@@ -3,9 +3,29 @@
 #define RENDERER_H
 
 #include "image.h"
-#include "scene.h"
 #include "vec2.h"
 #include <random>
+
+
+struct Material
+{
+    Color<float> emission;
+    float emission_intensity;
+    float reflectivity;
+
+    Material() : emission(0.0f), emission_intensity(0.0f) {}
+    Material(Color<float> emission) : emission(emission), emission_intensity(1.0f) {}
+    Material(Color<float> emission, float intensity) : emission(emission), emission_intensity(intensity) {}
+    Material(Color<float> emission, float intensity, float reflectivity)
+     : emission(emission), emission_intensity(intensity), reflectivity(reflectivity) {}
+};
+
+struct Nearest
+{
+    float distance;
+    Material mtl;
+    Nearest() : distance(10e5), mtl() {}
+};
 
 
 class RendererConfig
@@ -25,28 +45,33 @@ class RendererConfig
 
 };
 
+typedef Nearest(*signed_distance_function)(Vec2);
+
 class Renderer
 {
 
     public:
-        Scene* scene;
         Image img;
         RendererConfig config;
         std::vector<uint32_t> height_values;
+        signed_distance_function sdf;
 
     public:
-        Renderer(Scene* scene, RendererConfig config)
-            :   scene(scene),
+        Renderer(RendererConfig config, signed_distance_function sdf)
+            :   sdf(sdf),
                 config(config),
                 img(Image(config.width, config.height))
                 {
 
-                height_values.reserve(img.height);
+                height_values.resize(img.height);
                 for (uint32_t y = 0; y < img.height; y++)
-                    height_values.push_back(y);
+                    height_values[y] = y;
                 }
 
         void render();
+
+    protected:
+        Vec2 normal(Vec2 p);
 
     private:
         Color<float> _sample(Vec2 uv, uint32_t sample_index);

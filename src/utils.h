@@ -4,16 +4,17 @@
 #include <math.h>
 #include <random>
 #include "vec2.h"
-#include "scene.h"
 
 #define PI 3.141592653589794626433832
 
 namespace Utils
 {
-
     static float random()
     {
-        return static_cast<float>(std::rand()) / RAND_MAX;
+		static thread_local std::uniform_real_distribution<float> distribution(0.0, 1.0);
+		static thread_local std::mt19937 generator;
+		return distribution(generator);
+        //return static_cast<float>(std::rand()) / RAND_MAX;
     }
 
     static Vec2 random_norm_vec2()
@@ -22,18 +23,25 @@ namespace Utils
         return {cos(angle), sin(angle)};
     }
 
-    static Vec2 normal(Vec2 p, const Scene* scene)
-    {
-        constexpr float epsilon = 0.001f;
-        return {
-            (scene->sdf({p.x + epsilon, p.y}).distance - scene->sdf({p.x - epsilon, p.y}).distance) * 0.5f / epsilon,
-            (scene->sdf({p.x, p.y + epsilon}).distance - scene->sdf({p.x, p.y - epsilon}).distance) * 0.5f / epsilon
-        };
-    }  
-
     static Vec2 reflect(Vec2 incident, Vec2 normal)
     {
         return incident - normal * (2.0f * Vec2::dot(incident, normal));
+    }
+
+    static float mix(float a, float b, float t)
+    {
+        // linear interpolation
+        return a + (b - a) * t;
+    }
+    
+    static Color<float> mix(Color<float> a, Color<float> b, float t)
+    {
+        return {
+            mix(a.r, b.r, t),
+            mix(a.g, b.g, t),
+            mix(a.b, b.b, t),
+            mix(a.a, b.a, t)
+        };
     }
 
     static float min(float a, float b)

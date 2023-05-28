@@ -90,7 +90,7 @@ struct Color
 
         Color<T> operator*(float value)
         {
-            return {value * r, value *b, value *g, value *a};
+            return {value * r, value * g, value * b, value *a};
         }   
 
         void operator*=(float value)
@@ -103,7 +103,7 @@ struct Color
 
         Color<T> operator/(float value)
         {
-            return {value / r, value /b, value /g, value /a};
+            return {r / value, g / value, b / value, a / value};
         }   
 
         void operator/=(float value)

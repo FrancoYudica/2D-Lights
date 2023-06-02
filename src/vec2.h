@@ -17,9 +17,9 @@ struct Vec2
         static float length_squared(Vec2 vec) {return vec.x * vec.x + vec.y * vec.y; }
         static Vec2 normalize(Vec2 vec) {return vec * (1.0f / length(vec)); }
         static float dot(Vec2 a, Vec2 b) {return a.x * b.x + a.y * b.y; }
-
+        static Vec2 flip(const Vec2 a) { return {-a.x, -a.y}; }
         // Operator overloading
-        Vec2 operator +(const Vec2& other)
+        Vec2 operator +(const Vec2& other) const
         {
             return {x + other.x, y + other.y};
         }
@@ -30,7 +30,7 @@ struct Vec2
             y += other.y;
         }
 
-        Vec2 operator -(const Vec2& other)
+        Vec2 operator -(const Vec2& other) const
         {
             return {x - other.x, y - other.y};
         }
@@ -41,7 +41,7 @@ struct Vec2
             y -= other.y;
         }
 
-        Vec2 operator*(const Vec2& other)
+        Vec2 operator*(const Vec2& other) const
         {
             return {x * other.x, y * other.y};
         }   
@@ -53,7 +53,7 @@ struct Vec2
         }
 
 
-        Vec2 operator+(float value)
+        Vec2 operator+(float value) const
         {
             return {x + value, y + value};
         }   
@@ -65,7 +65,7 @@ struct Vec2
         }
 
 
-        Vec2 operator-(float value)
+        Vec2 operator-(float value) const
         {
             return {x - value, y - value};
         }   
@@ -77,7 +77,7 @@ struct Vec2
         }
 
 
-        Vec2 operator*(float value)
+        Vec2 operator*(float value) const
         {
             return {x * value, y * value};
         }   

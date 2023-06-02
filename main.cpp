@@ -1,4 +1,5 @@
 #include <iostream>
+#include <execution>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -16,25 +17,15 @@ static void _eval(float distance, Material mtl, Nearest& nearest)
     }
 }      
 
-static Material mix(const Material& m1, const Material& m2, float t)
-{
-    return Material(
-        mix(m1.emission, m2.emission, t),
-        mix(m1.emission_intensity, m2.emission_intensity, t),
-        mix(m1.reflectivity, m2.reflectivity, t)
-    );
-}
-
-
-
-Nearest room_sdf(Vec2 pos)
+Nearest room_sdf(Vec2 pos, float time)
 {
     Nearest nearest;
-    Material white_mtl(Color<float>(1.0f), 1.0f, 0.0f);
-    Material purple_mtl(Color<float>(0.3, 0.0f, .8f, 1.0f), 2.0f, 0.0f);
-    Material light_purple_mtl(Color<float>(0.5, 0.2f, 1.0f, 1.0f), 1.0f, 0.0f);
-    Material green_mtl(Color<float>(0.7, 1.0f, .2f, 1.0f), 1.5f, 0.0f);
-    Material black_mtl(Color<float>(0.0f), 0.0f, 0.5f);
+
+    Material white_mtl = Material::create_light({1.0f}, 2.0f);
+    Material black_mtl = Material::create_reflective(0.5f);
+    Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
+    Material light_purple_mtl = Material::create_light(Color(0.5f, 0.2f, 1.0f, 1.0f), 1.3f);
+    Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
 
     // Center circle
     _eval(SDF::circle(pos, Vec2(), 0.1f), purple_mtl, nearest);
@@ -64,14 +55,13 @@ Nearest room_sdf(Vec2 pos)
     return nearest;
 }
 
-Nearest room2_sdf(Vec2 pos)
+Nearest room2_sdf(Vec2 pos, float time)
 {
     Nearest nearest;
-    Material white_mtl(Color<float>(1.0f), 1.6f, 0.0f);
-    Material purple_mtl(Color<float>(0.3, 0.0f, .8f, 1.0f), 1.3f, 0.9f);
-    Material green_mtl(Color<float>(0.7, 1.0f, .2f, 1.0f), 1.5f, 0.0f);
-
-    Material black_mtl(Color<float>(0.0f), 0.0f, 0.7);
+    Material white_mtl = Material::create_light({1.0f}, 2.0f);
+    Material black_mtl = Material::create_reflective(0.5f);
+    Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
+    Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
 
     // Central light
     _eval(SDF::circle(pos, Vec2(), 0.1f), white_mtl, nearest);
@@ -105,11 +95,9 @@ Nearest room2_sdf(Vec2 pos)
 
 }
 
-Nearest rainbow_sdf(Vec2 pos)
+Nearest rainbow_sdf(Vec2 pos, float time)
 {
     Nearest nearest;
-    Material black_mtl(Color<float>(0.0f), 0.0f, 0.7);
-
     Color<float> colors[7];
     colors[0] = Color<float>(148, 0, 211, 255) / 255.0f;
     colors[1] = Color<float>(75, 0, 130, 255) / 255.0f;
@@ -130,7 +118,7 @@ Nearest rainbow_sdf(Vec2 pos)
         Vec2 p0(-0.5f * segment_length, y);
         Vec2 p1(0.5f * segment_length, y);
         float line_distance = SDF::line(pos, p0, p1, 0.1f);
-        Material mtl(color, 1.0f, 0.6f);
+        Material mtl = Material::create_light(color, 1.0f);
         _eval(SDF::line(pos, p0, p1, 0.01f), mtl, nearest);
     }
     return nearest;
@@ -138,15 +126,12 @@ Nearest rainbow_sdf(Vec2 pos)
 }
 
 
-Nearest room3_sdf(Vec2 pos)
+Nearest smooth_intensity_interpolation(Vec2 pos, float time)
 {
     Nearest nearest;
-    Material white_mtl(Color<float>(1.0f), 1.0f, 0.0f);
-    Material purple_mtl(Color<float>(0.3, 0.0f, .8f, 1.0f), 1.3f, 0.9f);
-    Material green_mtl(Color<float>(0.7, 1.0f, .2f, 1.0f), 1.5f, 0.9f);
-    Material red_mtl(Color<float>(1.0f, 0.0f, 0.3f, 1.0f), 1.5f, 0.9f);
-
-    Material black_mtl(Color<float>(0.0f), 0.0f, 0.7);
+    Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 2.0f);
+    Material purple_light_darker = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 0.7f);
+    Material green_light = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
 
     // Central light
     float radius = 0.3f;
@@ -154,25 +139,209 @@ Nearest room3_sdf(Vec2 pos)
 
     float line = SDF::line(pos, Vec2(-0.5), Vec2(0.0, 0.5f), 0.05f);
     float circle1 = SDF::circle(pos, Vec2(0.3f, 0.0f), radius);
-    float objects = SDF::combine_union_s(line, circle1, k_smooth_factor);
-    float smooth_lerp = SDF::smooth_t(line, circle1, k_smooth_factor);
-    auto interpolated_mtl = mix(purple_mtl, green_mtl, smooth_lerp);
-    std::cout << interpolated_mtl.reflectivity;
-    
-    //interpolated_mtl.reflectivity = 0.0f;
+
+    float h = SDF::smooth_t(line, circle1, k_smooth_factor);
+    float objects = SDF::combine_union_s(line, circle1, k_smooth_factor, h);
+    auto interpolated_mtl = Material::mix(purple_light, purple_light_darker, h);
+
     _eval(objects, interpolated_mtl, nearest);
+
     return nearest;
 }
 
 
-Nearest scene_sdf(Vec2 pos)
+Nearest smooth_color_interpolation(Vec2 pos, float time)
 {
     Nearest nearest;
-    Material white_mtl(Color<float>(1.0f), 2.0f, 0.0f);
-    Material purple_mtl(Color<float>(0.3, 0.0f, .8f, 1.0f), 1.5f, 0.0f);
-    Material green_mtl(Color<float>(0.7, 1.0f, .2f, 1.0f), 1.5f, 0.0f);
+    Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.2f);
+    Material red_light = Material::create_light(Color(1.0f, 0.0f, 0.443f, 1.0f), 1.2f);
 
-    Material black_mtl(Color<float>(0.0f), 0.0f, 0.5);
+    float k_smooth_factor = 0.3f;
+
+    float line_x = SDF::line(pos, Vec2(-0.5, 0.0f), Vec2(0.5f, 0.0f), 0.05f);
+    float line_y = SDF::line(pos, Vec2(0.0f, -0.5f), Vec2(0.0f, 0.5f), 0.05f);
+
+    float h = SDF::smooth_t(line_x, line_y, k_smooth_factor);
+    float objects = SDF::combine_union_s(line_x, line_y, k_smooth_factor, h);
+    auto interpolated_mtl = Material::mix(purple_light, red_light, h);
+
+    _eval(objects, interpolated_mtl, nearest);
+
+    return nearest;
+}
+
+Nearest smooth_reflections(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material white_light = Material::create_light(Color(1.0f), 2.0f);
+    Material reflective_walls = Material::create_reflective(0.9f);
+
+    // Central light
+    _eval(SDF::circle(pos, Vec2(0.3f), 0.1f), white_light, nearest);
+    _eval(SDF::circle(pos, Vec2(-0.9f), 0.05f), white_light, nearest);
+
+    float k_smooth_factor = 0.4f;
+
+    // Calculates the distances
+    float box = SDF::box(pos, Vec2(-0.5f, 0.3f), Vec2(0.15f));
+    float line_x = SDF::line(pos, Vec2(-0.5f), Vec2(0.5f, -0.5f), 0.05f);
+    float line_y = SDF::line(pos, Vec2(-0.5f, -0.5f), Vec2(-0.5f, 0.5f), 0.05f);
+
+    // Interpolates just the distances, since the material is the same
+    float lines = SDF::combine_union_s(line_x, line_y, k_smooth_factor);
+    float objects = SDF::combine_union_s(lines, box, k_smooth_factor);
+
+    _eval(objects, reflective_walls, nearest);
+    return nearest;
+}
+
+
+
+Nearest multiple_interpolations_0(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material mat0 = Material::create_light(Color<float>(56, 192, 242, 255) / 255.0f, 1.0f);
+    Material mat1 = Material::create_light(Color<float>(58, 10, 200, 255) / 255.0f, 1.0f);
+    Material mat2 = Material::create_light(Color<float>(255, 10, 255, 255) / 255.0f, 1.0f);
+    
+    // Central light
+    float obj0 = SDF::circle(pos, Vec2(0.2f), 0.2f);
+    float obj1 = SDF::circle(pos, Vec2(-0.2f), 0.2f);
+    float obj2 = SDF::circle(pos, Vec2(0.1f, -0.2), 0.15f);
+
+    float k_smooth_factor = 0.2f;
+
+    float h;
+    float dist;
+    Material mtl;
+
+    h = SDF::smooth_t(obj0, obj1, k_smooth_factor);
+    mtl = Material::mix(mat1, mat0, h);
+    dist = SDF::combine_union_s(obj0, obj1, k_smooth_factor, h);
+
+
+    h = SDF::smooth_t(dist, obj2, k_smooth_factor);
+    mtl = Material::mix(mat2, mtl, h);
+    dist = SDF::combine_union_s(dist, obj2, k_smooth_factor, h);
+
+    _eval(dist, mtl, nearest);
+    return nearest;
+}
+
+
+Nearest multiple_interpolations(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material mat0 = Material::create_light(Color<float>(56, 192, 242, 95) / 255.0f, 1.0f);
+    Material mat1 = Material::create_light(Color<float>(58, 252, 122, 99) / 255.0f, 1.0f);
+    Material mat2 = Material::create_light(Color<float>(194, 230, 64, 90) / 255.0f, 1.0f);
+    Material mat3 = Material::create_light(Color<float>(252, 198, 58, 99) / 255.0f, 1.0f);
+    Material mat4 = Material::create_light(Color<float>(245, 115, 64, 96) / 255.0f, 1.0f);
+    
+    // Central light
+    float obj0 = SDF::circle(pos, Vec2(0.0f, 0.6f), 0.2f);
+    float obj1 = SDF::circle(pos, Vec2(-0.4f, -0.6f), 0.2f);
+    float obj2 = SDF::circle(pos, Vec2(0.2f, -0.1), 0.2f);
+    float obj3 = SDF::box(pos, Vec2(-0.4, 0.3), Vec2(0.1f));
+    float obj4 = SDF::circle(pos, Vec2(-0.3f, -0.2), 0.1f);
+
+    std::pair<float, Material> objects[5];
+    objects[0] = {obj0, mat0};
+    objects[1] = {obj1, mat1};
+    objects[2] = {obj2, mat2};
+    objects[3] = {obj3, mat3};
+    objects[4] = {obj4, mat4};
+
+    float k_smooth_factor = 0.4f;
+
+    Material interpolated_mtl = Material::create_opaque();
+    float interpolated_sd = 0;
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        auto pair = objects[i];
+        if (i == 0)
+        {
+            interpolated_mtl = pair.second;
+            interpolated_sd = pair.first;
+        }
+        else
+        {
+            // Interpolation factor
+            float h = SDF::smooth_t(interpolated_sd, pair.first, k_smooth_factor);
+
+            // Interpolated distance
+            interpolated_sd = SDF::combine_union_s(interpolated_sd, pair.first, k_smooth_factor, h);
+
+            // Interpolated color
+            interpolated_mtl = Material::mix(pair.second, interpolated_mtl, h);
+        }
+    }
+    _eval(interpolated_sd, interpolated_mtl, nearest);
+    return nearest;
+}
+
+
+Nearest cup_scene(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material white_light = Material::create_light({1.0f}, 1.0f);
+    Material mat0 = Material::create_light(Color<float>(250, 9, 71, 95) / 255.0f, 0.6f);
+    Material mat1 = Material::create_light(Color<float>(255, 0, 247, 99) / 255.0f, 1.2f);
+    Material mat4 = Material::create_light(Color<float>(245, 115, 64, 96) / 255.0f, 1.2f);
+    
+    // Central light
+    float moon = SDF::combine_subtract(
+        SDF::circle(pos, Vec2(0.0f, 0.4f), 0.6f),
+        SDF::circle(pos, Vec2(0.0f, 0.8f), 0.5f)
+    );
+    float body = SDF::box(pos, Vec2(0.0f), Vec2(0.25f, 0.3f));
+    float mouth = SDF::box(pos, Vec2(0.0f, -0.5f), Vec2(0.25f, 0.07f));
+
+    float eye1 = SDF::circle(pos, Vec2(-0.15f, 0.0f), 0.1f);
+    float eye2 = SDF::circle(pos, Vec2(0.15f, 0.0f), 0.1f);
+    float eyes = SDF::combine_union_s(eye1, eye2, 0.26f);
+    
+    _eval(eyes, white_light, nearest);
+    float skull = SDF::combine_union_s(moon, SDF::combine_union(body, mouth), 0.1f);
+    _eval(SDF::combine_subtract(skull, eyes), mat0, nearest);
+    return nearest;
+}
+
+
+Nearest test_sequence_sdf(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material white_light = Material::create_light({1.0f}, 1.0f);
+    Material mat0 = Material::create_light(Color<float>(250, 9, 71, 95) / 255.0f, 1.2f);
+    Material mat1 = Material::create_light(Color<float>(100, 0, 247, 99) / 255.0f, 1.2f);
+    
+    float angle1 = PI * time;
+    float angle2 = 2.0f * PI * time;
+    float length = 0.6f;
+    Vec2 end1(length * cos(angle1), length * sin(angle1));
+    Vec2 end2(length * cos(angle2), length * sin(angle2));
+
+    float line1 = SDF::line(pos, end1, Vec2::flip(end1), 0.06f);
+    float line2 = SDF::line(pos, end2, Vec2::flip(end2), 0.06f);
+
+    float k = 0.2f;
+    float h = SDF::smooth_t(line1, line2, k);
+    float lines = SDF::combine_union_s(line1, line2, k, h);
+    Material mtl = Material::mix(mat1, mat0, h);
+    _eval(lines, mtl, nearest);
+    return nearest;
+}
+
+
+
+Nearest scene_sdf(Vec2 pos, float time)
+{
+    Nearest nearest;
+    Material white_mtl = Material::create_light({1.0f}, 2.0f);
+    Material black_mtl = Material::create_reflective(0.5f);
+    Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
+    Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
+    
     //_eval(SDF::circle(pos, Vec2(0.3f, 0.6f), 0.2f), white_mtl, nearest);
     //_eval(SDF::box(pos, {-0.4, -0.4}, {0.1, 0.1}), purple_mtl, nearest);
     _eval(SDF::circle(pos, Vec2(), 0.1f), green_mtl, nearest);
@@ -222,14 +391,88 @@ Nearest scene_sdf(Vec2 pos)
 }
 
 
+struct VideoSequenceConfig
+{
+    RendererConfig frame_config;
+    float start_time;
+    float time_step;
+    uint32_t frame_count;
+};
+
+static void render_sequence(const VideoSequenceConfig& config, const std::string& path, signed_distance_function sdf)
+{
+#if 1
+    std::vector<uint32_t> renderers;
+    for (uint32_t i = 0; i < config.frame_count; i++)
+        renderers.emplace_back(i);
+    
+    std::for_each(
+        std::execution::par_unseq,
+        renderers.begin(),
+        renderers.end(),
+        [config, path, sdf](uint32_t i)
+        {
+                    
+            float current_time = config.start_time + config.time_step * i;
+            Renderer frame_renderer(config.frame_config, sdf, current_time);
+            frame_renderer.debug = false;
+            frame_renderer.render();
+            std::cout << "Frame " << i << " rendered" << std::endl;
+            frame_renderer.img.save(path + std::to_string(i) + ".jpg");
+        }
+    );  
+#else
+    // config is per frame configuration
+    for (uint32_t i = 0; i < config.frame_count; i++)
+    {
+        float current_time = config.start_time + config.time_step * i;
+        Renderer frame_renderer(config.frame_config, sdf, current_time);
+        frame_renderer.render();
+        std::cout << "Frame " << i << " rendered" << std::endl;
+
+        frame_renderer.img.save(path + std::to_string(i) + ".jpg");
+    }
+#endif
+}
+
 
 int main()
 {
-    //RendererConfig config(512, 512, 1, 4);
-    //RendererConfig config(100, 100, 10, 10);
-    RendererConfig config(256, 256, 1, 10);
-    Renderer renderer(config, room3_sdf);
+    /*
+    uint32_t width = 256;
+    uint32_t height = 256;
+    uint32_t samples_per_pixel = 4;
+    uint32_t ray_tracing_depth = 10;
+    uint32_t ray_marching_iterations = 64;
+    RendererConfig config = {
+        width,
+        height,
+        samples_per_pixel,
+        ray_tracing_depth,
+        ray_marching_iterations,
+        static_cast<float>(width) / height // Aspect ratio
+    };
+    Renderer renderer(config, cup_scene, 0.0f);
     renderer.render();
     renderer.img.save("../images/result.jpg");
     return 0;
+    */
+    uint32_t width = 256;
+    uint32_t height = 256;
+    uint32_t samples_per_pixel = 1;
+    uint32_t ray_tracing_depth = 10;
+    uint32_t ray_marching_iterations = 64;
+    RendererConfig frame_config = {
+        width,
+        height,
+        samples_per_pixel,
+        ray_tracing_depth,
+        ray_marching_iterations,
+        static_cast<float>(width) / height // Aspect ratio
+    };
+
+    VideoSequenceConfig config = {frame_config, 0.0f, 1.0f / 30.0f, 30};
+    render_sequence(config, "../images/video_seq_speed_test/", test_sequence_sdf);
+
+   return 0;
 }

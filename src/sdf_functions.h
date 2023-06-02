@@ -24,6 +24,13 @@ namespace SDF
         return clamp(0.5f + 0.5f * (d2 - d1) / k, 0.0f, 1.0f);
     }
 
+
+    static float combine_union_s(float d1, float d2, float k, float h)
+    {
+        // Smooth union when h is already calculated
+        return mix(d2, d1, h) - k * h * (1.0f - h);
+    }
+
     static float combine_union_s(float d1, float d2, float k)
     {
         // Smooth union

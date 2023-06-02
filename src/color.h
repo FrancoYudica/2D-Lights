@@ -13,7 +13,7 @@ struct Color
         Color(T r, T g, T b, T a) : r(r), g(g), b(b), a(a) {}
         Color(T val) : r(val), g(val), b(val), a(val) {}
 
-        static Color<T> clamp(Color<T> c, T min, T max)
+        static Color<T> clamp(const Color<T>& c, T min, T max)
         {
             Color<T> color = c;
             if (color.r < min)
@@ -49,7 +49,7 @@ struct Color
             };
         }
 
-        Color<T> operator +(const Color& other)
+        Color<T> operator +(const Color& other) const
         {
             return {r + other.r, g + other.g, b + other.b, a + other.a};
         }
@@ -62,7 +62,7 @@ struct Color
             a += other.a;
         }
 
-        Color<T> operator -(const Color& other)
+        Color<T> operator -(const Color& other) const
         {
             return {r - other.r, g - other.g, b - other.b, a - other.a};
         }
@@ -75,7 +75,7 @@ struct Color
             a -= other.a;
         }
 
-        Color<T> operator *(const Color& other)
+        Color<T> operator *(const Color& other) const
         {
             return {r * other.r, g * other.g, b * other.b, a * other.a};
         }
@@ -88,12 +88,12 @@ struct Color
             a *= other.a;
         }
 
-        Color<T> operator*(float value)
+        Color<T> operator*(const float value) const
         {
             return {value * r, value * g, value * b, value *a};
         }   
 
-        void operator*=(float value)
+        void operator*=(const float value)
         {
             r *= value;
             g *= value;
@@ -101,12 +101,12 @@ struct Color
             a *= value;
         }
 
-        Color<T> operator/(float value)
+        Color<T> operator/(const float value) const
         {
             return {r / value, g / value, b / value, a / value};
         }   
 
-        void operator/=(float value)
+        void operator/=(const float value)
         {
             r /= value;
             g /= value;

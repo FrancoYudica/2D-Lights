@@ -28,6 +28,16 @@ namespace Utils
         return incident - normal * (2.0f * Vec2::dot(incident, normal));
     }
 
+	static Vec2 refract(const Vec2& incident, const Vec2& normal, float refractionRatio)
+	{
+		float cosTheta = std::min(Vec2::dot(Vec2::flip(incident), normal), 1.0f);
+		Vec2 perpendicular = (incident + normal * cosTheta) * refractionRatio; 
+		Vec2 parallel = Vec2::flip(normal) * std::sqrt(1 - Vec2::dot(perpendicular, perpendicular));
+		return perpendicular + parallel;
+	}
+
+
+
     static float mix(float a, float b, float t)
     {
         // linear interpolation

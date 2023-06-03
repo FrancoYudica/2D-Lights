@@ -7,14 +7,19 @@
 
 #define PI 3.141592653589794626433832
 
+static thread_local std::uniform_real_distribution<float> distribution(0.0, 1.0);
+static thread_local std::mt19937 generator;
 namespace Utils
 {
+
+
+    static void random_seed(uint32_t seed)
+    {
+        generator.seed(seed);
+    }
     static float random()
     {
-		static thread_local std::uniform_real_distribution<float> distribution(0.0, 1.0);
-		static thread_local std::mt19937 generator;
 		return distribution(generator);
-        //return static_cast<float>(std::rand()) / RAND_MAX;
     }
 
     static Vec2 random_norm_vec2()
@@ -36,9 +41,13 @@ namespace Utils
 		return perpendicular + parallel;
 	}
 
-
-
     static float mix(float a, float b, float t)
+    {
+        // linear interpolation
+        return a + (b - a) * t;
+    }
+
+    static Vec2 mix(Vec2 a, Vec2 b, float t)
     {
         // linear interpolation
         return a + (b - a) * t;

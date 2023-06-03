@@ -6,14 +6,13 @@
 
 void Renderer::render()
 {
-
-#if 0
     std::for_each(
         std::execution::par,
         height_values.begin(),
         height_values.end(),
         [this](uint32_t y)
         {
+            Utils::random_seed(y);
             for (uint32_t x = 0; x < img.width; x++)
             {
                 
@@ -33,44 +32,15 @@ void Renderer::render()
                     accumulated += _sample(uv + offset, sample);            
                 }
                 accumulated /= config.samples;
-                
                 Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
                 img.set_pixel(x, y, byte_color);
             }
+
+            if (debug)
+                std::cout << "Calculating: " << 100.0f * y / (img.height - 1.0f) << "%"<< std::endl;
+
         }
     );  
-
-#else
-    for (uint32_t y = 0; y < img.height; y++)
-    {
-        for (uint32_t x = 0; x < img.width; x++)
-        {
-            
-            Color<float> accumulated;
-            Vec2 uv(
-                static_cast<float>(x) / img.width,
-                1.0f - static_cast<float>(y) / img.height
-            );
-
-            // Multi sampling
-            for (uint32_t sample = 0; sample < config.samples; sample++)
-            {
-                
-                Vec2 offset = Utils::random_norm_vec2();
-                offset.x *= 0.25f / img.width;
-                offset.y *= 0.25f / img.height;
-                accumulated += _sample(uv + offset, sample);            
-            }
-            accumulated /= config.samples;
-            
-            Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
-            img.set_pixel(x, y, byte_color);
-        }
-        
-        if (debug)
-            std::cout << "Calculating: " << 100.0f * y / (img.height - 1.0f) << "%"<< std::endl;
-    }
-#endif
 }
 
 Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)

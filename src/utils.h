@@ -41,6 +41,19 @@ namespace Utils
 		return perpendicular + parallel;
 	}
 
+    static bool refract(const Vec2& incident, const Vec2& normal, float refractionRatio, Vec2& result)
+    {
+        float idotn = Vec2::dot(incident, normal);
+        float k = 1.0f - refractionRatio * refractionRatio * (1.0f - idotn * idotn);
+        if (k < 0.0f)
+            return false;
+
+        float a = refractionRatio * idotn + sqrtf(k);
+        result.x = refractionRatio * incident.x - a * normal.x;
+        result.y = refractionRatio * incident.y - a * normal.y;
+        return true;
+    }
+
     static float mix(float a, float b, float t)
     {
         // linear interpolation

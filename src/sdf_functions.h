@@ -38,6 +38,11 @@ namespace SDF
         return mix(d2, d1, h) - k * h * (1.0f - h);
     }
 
+    static float combine_intersect(float d1, float d2)
+    {
+        return max(d1, d2);
+    }
+
     static float combine_subtract_s(float d1, float d2, float k)
     {
         // Smooth subtract

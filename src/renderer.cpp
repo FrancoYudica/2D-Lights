@@ -4,6 +4,9 @@
 #include "sdf_functions.h"
 #include <execution>
 
+#define MARCH_HIT_DIST 1e-4
+#define OFFSET 1e-3
+
 void Renderer::render()
 {
     std::for_each(
@@ -49,26 +52,54 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
     for (uint32_t i = 0; i < config.ray_march_max_iterations; i++)
     {
         Nearest nearest = sdf(origin, _time);
+
+        float sign = nearest.distance > 0.0f ? 1.0f : -1.0f;
+
         Material& material = nearest.mtl;
-        if (nearest.distance < 1e-4f)
+        if (sign * nearest.distance < MARCH_HIT_DIST)
         {
             // Adds the intensity
             Color color = material.emission * material.emission_intensity;
 
-            // If the material is reflective
-            if (depth < config.max_recursion_depth && material.reflectivity > 0.0f)
+            // Check for reflection and refraction
+            if (depth < config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
             {
-                constexpr float OFFSET = 1e-3f;
                 Vec2 normal = this->gradient(origin);
-                Vec2 reflected = Utils::reflect(direction, normal);
-                Vec2 reflected_origin = reflected * OFFSET + origin;
 
-                Color reflected_color = _ray_march(reflected_origin, reflected, depth + 1);
-                color += reflected_color * material.reflectivity; 
+                // In case we are inside the object, flipping the normal gives us the correct result
+                normal *= sign;
+
+                float reflectivity = material.reflectivity;
+                if (material.ior > 0.0f)
+                {
+
+                    float ior = sign < 0.0f ? material.ior : 1.0f / material.ior;
+
+                    Vec2 refracted;
+                    if (refract(direction, normal, ior, refracted))
+                    {
+                        // Moves the point to the other medium side
+                        Vec2 refracted_origin = origin - normal * OFFSET;
+                        color += _ray_march(refracted_origin, refracted, depth + 1) * (1.0f - reflectivity);
+                    }
+                    else
+                    {
+                        // Total internal reflection
+                        reflectivity = 1.0f;
+                    }
+                }
+
+                if (reflectivity > 0.0f)
+                {
+                    Vec2 reflected = Utils::reflect(direction, normal);
+                    Vec2 reflected_origin = origin + normal * OFFSET;
+                    color += _ray_march(reflected_origin, reflected, depth + 1) * reflectivity; 
+                }
+                
             }
             return color;
         }
-        origin += direction * nearest.distance;
+        origin += direction * (nearest.distance * sign);
     }
     return Color(0.0f);
 }
@@ -88,12 +119,7 @@ Color<float> Renderer::_sample(Vec2 uv, uint32_t sample_index)
 Vec2 Renderer::gradient(Vec2 p)
 {
     constexpr float epsilon = 0.0001f;
-    /*
-    return {
-        (sdf({p.x + epsilon, p.y}).distance - sdf({p.x - epsilon, p.y}).distance) * 0.5f / epsilon,
-        (sdf({p.x, p.y + epsilon}).distance - sdf({p.x, p.y - epsilon}).distance) * 0.5f / epsilon
-    };
-    */
+
     float sdf_source = sdf(p, _time).distance;
     return {
         (sdf({p.x + epsilon, p.y}, _time).distance - sdf_source) / epsilon,

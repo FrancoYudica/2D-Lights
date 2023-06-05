@@ -8,7 +8,7 @@
 namespace Scenes
 {
         
-    static void _eval(float distance, Material mtl, Nearest& nearest)
+    static void _eval(float distance, const Material& mtl, Nearest& nearest)
     {
         if (distance < nearest.distance)
         {
@@ -365,9 +365,7 @@ namespace Scenes
         Material mat3 = Material::create_light(Color<float>(38, 219, 255, 255) / 255.0f, 1.2f);
 
         float top_light = SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(0.5f, 0.01f));
-        //float bottom_light = SDF::box(pos, Vec2(0.0f, -1.2f), Vec2(0.5f, 0.01f));
-        //float lights = SDF::combine_union(top_light, bottom_light);
-        //_eval(lights, white_light, nearest);
+
         _eval(top_light, white_light, nearest);
 
         // Loop time
@@ -430,8 +428,121 @@ namespace Scenes
         }
         _eval(interpolated_sd, interpolated_mtl, nearest);
         return nearest;
-        //_eval(SDF::combine_union(circle0_distance, SDF::combine_union(circle1_distance, SDF::combine_union(circle2_distance, circle_center))), mat1, nearest);
-        //return nearest;
+    }
+
+    static Nearest refraction_test(Vec2 pos, float time)
+    {
+        // Rotates 2 lines with different angular speed
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(0.4f, 0.01f)), white_light, nearest);
+
+        Vec2 origin(0.0f, 0.0f);
+        float offset = 0.55f;
+        Material refractive_material = Material::create_refractive(0.2f, 1.4f);
+
+        _eval(
+            SDF::combine_union(
+                SDF::combine_intersect(
+                    SDF::circle(pos, {origin.x, origin.y + offset}, 0.6f), 
+                    SDF::circle(pos, {origin.x, origin.y - offset}, 0.6f)
+                ),
+                SDF::box(pos, {-0.6, 0.0f}, Vec2(0.2f, 0.4f))
+            ),
+            refractive_material,
+            nearest
+        );
+
+
+        return nearest;
+    }
+
+    static Nearest refraction_test2(Vec2 pos, float time)
+    {
+        // Rotates 2 lines with different angular speed
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
+
+        Vec2 origin(0.0f, 0.0f);
+        float offset = 0.55f;
+        Material refractive_material = Material::create_refractive(0.2f, 1.4f);
+
+        _eval(
+            SDF::combine_subtract(
+                SDF::box(pos, {0.0f, 0.0f}, {0.5f, 0.5f}),
+                SDF::circle(pos, {0.0f, 0.5f}, 0.8f)
+            ),
+            refractive_material,
+            nearest
+        );
+
+
+        return nearest;
+    }
+
+    static Nearest refraction_test3(Vec2 pos, float time)
+    {
+        // REFRACTION OF CIRCLE
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
+
+        Vec2 origin(0.0f, 0.0f);
+        float offset = 0.55f;
+        Material refractive_material = Material::create_refractive(0.2f, 1.4f);
+
+        _eval(
+            SDF::circle(pos, {0.0f, 0.0f}, 0.5f),
+            refractive_material,
+            nearest
+        );
+        return nearest;
+    }
+
+    static Nearest refraction_test4(Vec2 pos, float time)
+    {
+        // REFRACTION OF CIRCLE
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        Material yellow_light = Material::create_light(Color<float>(252, 241, 177, 255) / 255.0f, 3.0f);
+        _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
+        _eval(SDF::circle(pos, Vec2(1.3f, 0.0f), 0.2f), yellow_light, nearest);
+
+        Material refractive_material = Material::create_refractive(0.2f, 1.4f);
+
+        _eval(
+            SDF::combine_union_s(
+                SDF::circle(pos, Vec2(0.4f * static_cast<float>(cos(time * 2.0f * PI)), -0.3f), 0.4f),
+                SDF::box(pos, Vec2(-0.4f * static_cast<float>(cos(time * 2.0f * PI)), 0.3f), Vec2(0.4f)),
+                0.3f
+            ),
+            refractive_material,
+            nearest
+        );
+        return nearest;
+    }
+
+    static Nearest shape_interpolation(Vec2 pos, float time)
+    {
+        // REFRACTION OF CIRCLE
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        Material yellow_light = Material::create_light(Color<float>(252, 241, 177, 255) / 255.0f, 3.0f);
+        _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
+        _eval(SDF::circle(pos, Vec2(1.3f, 0.0f), 0.2f), yellow_light, nearest);
+
+        float pentagon = SDF::pentagon(pos, 0.2f);
+        float heart = SDF::heart(pos, Vec2());
+        Material pentagon_mtl = Material::create_light(Color<float>(0, 153, 255, 255) / 255.0f, 1.4f);
+        Material heart_mtl = Material::create_light(Color<float>(255, 77, 0, 255) / 255.0f, 1.4f);
+
+        float t = sin(time * PI);
+
+        Material mtl = Material::mix(pentagon_mtl, heart_mtl, t);
+        float d = Utils::mix(pentagon, heart, t);
+        _eval(d, mtl, nearest);
+        return nearest;
     }
 
     static Nearest scene_sdf(Vec2 pos, float time)

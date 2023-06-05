@@ -44,8 +44,8 @@ int main()
 
     uint32_t width = 512;
     uint32_t height = 512;
-    uint32_t samples_per_pixel = 64;
-    uint32_t ray_tracing_depth = 10;
+    uint32_t samples_per_pixel = 2;
+    uint32_t ray_tracing_depth = 6;
     uint32_t ray_marching_iterations = 64;
     RendererConfig frame_config = {
         width,
@@ -56,8 +56,8 @@ int main()
         static_cast<float>(width) / height // Aspect ratio
     };
 
-    VideoSequenceConfig config = {frame_config, 0.0f, 1.0f / 240.0f, 240};
-    render_sequence(config, "../../video/metaballs-v1/seq/", Scenes::metaballs);
+    VideoSequenceConfig config = {frame_config, 0.0f, 1.0f / 120.0f, 120};
+    render_sequence(config, "../../video/shape_interpolation/seq/", Scenes::shape_interpolation);
 
    return 0;
 }

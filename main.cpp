@@ -44,9 +44,9 @@ int main()
 
     uint32_t width = 512;
     uint32_t height = 512;
-    uint32_t samples_per_pixel = 2;
+    uint32_t samples_per_pixel = 256;
     uint32_t ray_tracing_depth = 6;
-    uint32_t ray_marching_iterations = 64;
+    uint32_t ray_marching_iterations = 128;
     RendererConfig frame_config = {
         width,
         height,
@@ -57,7 +57,7 @@ int main()
     };
 
     VideoSequenceConfig config = {frame_config, 0.0f, 1.0f / 120.0f, 120};
-    render_sequence(config, "../../video/shape_interpolation/seq/", Scenes::shape_interpolation);
+    render_sequence(config, "../../images/", Scenes::multiple_interpolations_0);
 
    return 0;
 }

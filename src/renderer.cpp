@@ -9,11 +9,13 @@
 
 void Renderer::render()
 {
+    uint32_t sample_size = static_cast<uint32_t>(std::sqrt(config.samples));
+
     std::for_each(
         std::execution::par,
         height_values.begin(),
         height_values.end(),
-        [this](uint32_t y)
+        [sample_size, this](uint32_t y)
         {
             Utils::random_seed(y);
             for (uint32_t x = 0; x < img.width; x++)
@@ -25,15 +27,22 @@ void Renderer::render()
                     1.0f - static_cast<float>(y) / img.height
                 );
 
-                // Multi sampling
-                for (uint32_t sample = 0; sample < config.samples; sample++)
+                // Multi sampling - Samples a grid
+                int sample_index = 0;
+                for (uint32_t x_sample = 0; x_sample < sample_size; x_sample++)
                 {
-                    
-                    Vec2 offset = Utils::random_norm_vec2();
-                    offset.x *= 0.25f / img.width;
-                    offset.y *= 0.25f / img.height;
-                    accumulated += _sample(uv + offset, sample);            
+                    for (uint32_t y_sample = 0; y_sample < sample_size; y_sample++)
+                    {
+                        Vec2 offset(x_sample, y_sample);
+                        offset.x /= sample_size;
+                        offset.y /= sample_size;
+                        offset = offset - 0.5f;
+                        offset.x /= img.width;
+                        offset.y /= img.height;
+                        accumulated += _sample(uv + offset, sample_index++);            
+                    }
                 }
+
                 accumulated /= config.samples;
                 Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
                 img.set_pixel(x, y, byte_color);

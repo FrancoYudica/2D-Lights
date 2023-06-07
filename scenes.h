@@ -545,6 +545,55 @@ namespace Scenes
         return nearest;
     }
 
+    static Nearest convex_lens(Vec2 pos, float time)
+    {
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 20.0f);
+
+        _eval(SDF::circle(pos, Vec2(0.0f, 1.4f), 0.05), white_light, nearest);
+
+        Vec2 origin(0.0f, 0.3f);
+        float offset = 0.5f;
+        Material refractive_material = Material::create_refractive(0.2f, 1.5f);
+
+        _eval(
+            SDF::combine_intersect(
+                SDF::circle(pos, {origin.x, origin.y + offset}, 0.6f), 
+                SDF::circle(pos, {origin.x, origin.y - offset}, 0.6f)
+            ),
+            refractive_material,
+            nearest
+        );
+        return nearest;
+    }
+
+
+    static Nearest concave_lens(Vec2 pos, float time)
+    {
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 20.0f);
+
+        _eval(SDF::circle(pos, Vec2(0.0f, 1.4f), 0.05), white_light, nearest);
+
+        Vec2 origin(0.0f, 0.0f);
+        Material refractive_material = Material::create_refractive(0.2f, 1.5f);
+        float radius = 0.6f;
+        float lens_thickness = 0.1f;
+        _eval(
+            SDF::combine_subtract(
+                SDF::box(pos, origin, Vec2(0.4f, 0.3f)),
+                SDF::combine_union(
+                    SDF::circle(pos, {origin.x, origin.y + radius + lens_thickness * 0.5f}, radius), 
+                    SDF::circle(pos, {origin.x, origin.y - radius - lens_thickness * 0.5f}, radius)
+                )
+            ),
+            refractive_material,
+            nearest
+        );
+        return nearest;
+    }
+
+
     static Nearest scene_sdf(Vec2 pos, float time)
     {
         Nearest nearest;

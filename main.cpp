@@ -34,17 +34,9 @@ static void render_sequence(const VideoSequenceConfig& config, const std::string
 
 int main()
 {
-
-    /*
-    
-    uint32_t width = 512 / 2;
-    uint32_t height = 512 / 2;
-    uint32_t samples_per_pixel = 1;
-    */
-
     uint32_t width = 512;
     uint32_t height = 512;
-    uint32_t samples_per_pixel = 256;
+    uint32_t samples_per_pixel = 512;
     uint32_t ray_tracing_depth = 6;
     uint32_t ray_marching_iterations = 128;
     RendererConfig frame_config = {
@@ -53,11 +45,12 @@ int main()
         samples_per_pixel,
         ray_tracing_depth,
         ray_marching_iterations,
-        static_cast<float>(width) / height // Aspect ratio
+        static_cast<float>(width) / height, // Aspect ratio
+        false // Enables sampling offset
     };
 
     VideoSequenceConfig config = {frame_config, 0.0f, 1.0f / 120.0f, 120};
-    render_sequence(config, "../../images/", Scenes::multiple_interpolations_0);
+    render_sequence(config, "../../images/", Scenes::concave_lens);
 
    return 0;
 }

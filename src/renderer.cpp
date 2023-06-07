@@ -39,6 +39,7 @@ void Renderer::render()
                         offset = offset - 0.5f;
                         offset.x /= img.width;
                         offset.y /= img.height;
+                        offset *= config.sampling_offset;
                         accumulated += _sample(uv + offset, sample_index++);            
                     }
                 }
@@ -57,7 +58,6 @@ void Renderer::render()
 
 Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
 {
-
     for (uint32_t i = 0; i < config.ray_march_max_iterations; i++)
     {
         Nearest nearest = sdf(origin, _time);
@@ -83,7 +83,6 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
                 {
 
                     float ior = sign < 0.0f ? material.ior : 1.0f / material.ior;
-
                     Vec2 refracted;
                     if (refract(direction, normal, ior, refracted))
                     {
@@ -97,7 +96,6 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
                         reflectivity = 1.0f;
                     }
                 }
-
                 if (reflectivity > 0.0f)
                 {
                     Vec2 reflected = Utils::reflect(direction, normal);
@@ -111,6 +109,7 @@ Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
         origin += direction * (nearest.distance * sign);
     }
     return Color(0.0f);
+  
 }
 
 Color<float> Renderer::_sample(Vec2 uv, uint32_t sample_index)
@@ -134,5 +133,4 @@ Vec2 Renderer::gradient(Vec2 p)
         (sdf({p.x + epsilon, p.y}, _time).distance - sdf_source) / epsilon,
         (sdf({p.x, p.y + epsilon}, _time).distance - sdf_source) / epsilon
     };
-
 }

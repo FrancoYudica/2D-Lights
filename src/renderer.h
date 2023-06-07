@@ -24,6 +24,7 @@ struct RendererConfig
     uint32_t max_recursion_depth;
     uint32_t ray_march_max_iterations;
     float aspect_ratio;
+    bool sampling_offset;
 };
 
 typedef Nearest(*signed_distance_function)(Vec2, float);

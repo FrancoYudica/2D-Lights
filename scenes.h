@@ -1,9 +1,15 @@
+/*
+This file contains a set of scenes. Here, different examples of how the signed_distance_function
+should be structured
+*/
+
+
 #pragma once
 #ifndef SCENES_H
 #define SCENES_H
+#include "lights2d/lights2d.h"
 
-#include "src/renderer.h"
-#include "src/sdf_functions.h"
+using namespace Lights2D;
 
 namespace Scenes
 {

@@ -5,35 +5,40 @@
 #include <string>
 #include <stdint.h>
 #include "color.h"
-#include "stb_image.h"
-#include "stb_image_write.h"
-
 
 namespace Lights2D
 {
-    struct Image
+    class Image
     {
-        Color<uint8_t>* buffer;
-        uint32_t width, height;
-        Image(uint32_t width, uint32_t height) : width(width), height(height)
-        {
-            buffer = new Color<uint8_t>[width * height];
-        }
+        /*
+            Lights2D::Image is a data structure that contains the rendered image buffer.
+            Allocates memory in the heap, and has a destructor.
+        */
+        public:
+            uint32_t width, height;
+            Color<uint8_t>* buffer;
 
-        ~Image()
-        {
-            delete[] buffer;
-        }
+        public:
+            Image(uint32_t width, uint32_t height) : width(width), height(height)
+            {
+                buffer = new Color<uint8_t>[width * height];
+            }
 
-        void set_pixel(uint32_t x, uint32_t y, Color<uint8_t> color)
-        {
-            buffer[x + y * width] = color;
-        }
+            ~Image()
+            {
+                delete[] buffer;
+            }
 
-        void save(const std::string& path)
-        {
-            stbi_write_jpg(path.c_str(), width, height, 4, &buffer[0], width * sizeof(int));
-        }
+            void set_pixel(uint32_t x, uint32_t y, Color<uint8_t> color)
+            {
+                buffer[x + y * width] = color;
+            }
+
+            void clear()
+            {
+                memset(buffer, 0, width * height * sizeof(Color<uint8_t>));
+            }
+
     };
 }
 #endif

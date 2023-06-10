@@ -6,6 +6,8 @@
 #include "vec2.h"
 #include "material.h"
 #include <random>
+#include <memory>
+#include <functional>
 
 namespace Lights2D
 {
@@ -18,7 +20,7 @@ namespace Lights2D
     };
 
 
-    struct RendererConfig
+    struct FrameConfig
     {
         uint32_t width, height;                 // Output image size
         uint32_t samples;                       // For coherent results, samples should be an integer power of 2, 2^n
@@ -29,28 +31,28 @@ namespace Lights2D
     };
 
     // Function pointer type definition. This function should be given as an argument to the constructor of the renderer
-    typedef Nearest(*signed_distance_function)(Vec2, float);
+    typedef std::function<Nearest(Vec2, float)> SignedDistanceFunction;
 
     class Renderer
     {
 
         public:
-            Image img;
-            RendererConfig config;
+            std::shared_ptr<Image> img;
+            FrameConfig config;
             std::vector<uint32_t> height_values;
-            signed_distance_function sdf;
+            SignedDistanceFunction sdf;
             bool debug;
 
         public:
-            Renderer(RendererConfig config, signed_distance_function sdf, float time)
+            Renderer(FrameConfig config, SignedDistanceFunction sdf, float time, std::shared_ptr<Image> image)
                 :   sdf(sdf),
                     config(config),
-                    img(Image(config.width, config.height)),
+                    img(image),
                     _time(time)
                     {
 
-                    height_values.resize(img.height);
-                    for (uint32_t y = 0; y < img.height; y++)
+                    height_values.resize(config.height);
+                    for (uint32_t y = 0; y < config.height; y++)
                         height_values[y] = y;
                     }
 

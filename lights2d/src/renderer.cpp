@@ -20,13 +20,13 @@ namespace Lights2D
             [sample_size, this](uint32_t y)
             {
                 Utils::random_seed(y);
-                for (uint32_t x = 0; x < img.width; x++)
+                for (uint32_t x = 0; x < config.width; x++)
                 {
 
                     Color<float> accumulated;
                     Vec2 uv(
-                        static_cast<float>(x) / img.width,
-                        1.0f - static_cast<float>(y) / img.height
+                        static_cast<float>(x) / config.width,
+                        1.0f - static_cast<float>(y) / config.height
                     );
 
                     // Multi sampling - Samples a grid
@@ -43,8 +43,8 @@ namespace Lights2D
                             offset.x /= sample_size;
                             offset.y /= sample_size;
                             offset = offset - 0.5f;
-                            offset.x /= img.width;
-                            offset.y /= img.height;
+                            offset.x /= config.width;
+                            offset.y /= config.height;
 
                             // If false, disables offset
                             offset *= config.sampling_offset;
@@ -56,11 +56,11 @@ namespace Lights2D
 
                     // Color<float> -> Color<uint8_t> is overwritten, and values are mapped [0, 1] to [0, 255] automatically
                     Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
-                    img.set_pixel(x, y, byte_color);
+                    img->set_pixel(x, y, byte_color);
                 }
 
                 if (debug)
-                    std::cout << "Calculating: " << 100.0f * y / (img.height - 1.0f) << "%"<< std::endl;
+                    std::cout << "Calculating: " << 100.0f * y / (config.height - 1.0f) << "%"<< std::endl;
 
             }
         );  

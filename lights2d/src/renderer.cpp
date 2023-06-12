@@ -73,9 +73,9 @@ namespace Lights2D
             Nearest nearest = sdf(origin, _time);
 
             float sign = nearest.distance > 0.0f ? 1.0f : -1.0f;
-
+            float unsigned_distance = sign * nearest.distance;
             Material& material = nearest.mtl;
-            if (sign * nearest.distance < MARCH_HIT_DIST)
+            if (unsigned_distance < MARCH_HIT_DIST)
             {
                 // Adds the intensity
                 Color color = material.emission * material.emission_intensity;
@@ -94,11 +94,11 @@ namespace Lights2D
 
                         float ior = sign < 0.0f ? material.ior : 1.0f / material.ior;
                         Vec2 refracted;
-                        if (Utils::refract(direction, normal, ior, refracted))
+                        if (Utils::refract(Vec2::normalize(direction), Vec2::normalize(normal), ior, refracted))
                         {
                             // Moves the point to the other medium side
                             Vec2 refracted_origin = origin - normal * OFFSET;
-                            color += _ray_march(refracted_origin, refracted, depth + 1) * (1.0f - reflectivity);
+                            color += _ray_march(refracted_origin, Vec2::normalize(refracted), depth + 1) * (1.0f - reflectivity);
                         }
                         else
                         {
@@ -116,7 +116,7 @@ namespace Lights2D
                 }
                 return color;
             }
-            origin += direction * (nearest.distance * sign);
+            origin += direction * unsigned_distance;
         }
         return Color(0.0f);
     

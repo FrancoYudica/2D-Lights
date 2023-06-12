@@ -12,9 +12,9 @@ namespace Lights2D
     typedef std::function<void(std::shared_ptr<Image>, uint32_t)> FrameRenderCallback;
 
     /*
-    Given the folder path, renders a sequence of "continuous" frames, modifying the
-    time argument, given in the signed_distance_function. All the configuration is
-    done with FrameSequenceConfig struct
+    render_sequence allows the user to render sequences of images. The only propose of the
+    function is to modify the time argument passed in the sdf function.
+    The configuration is specified by SequenceConfig struct
     */
     struct SequenceConfig
     {

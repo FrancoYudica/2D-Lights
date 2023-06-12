@@ -35,18 +35,33 @@ namespace Lights2D
             return incident - normal * (2.0f * Vec2::dot(incident, normal));
         }
 
-        static bool refract(const Vec2& incident, const Vec2& normal, float refractionRatio, Vec2& result)
+
+        static bool refract(const Vec2& I, const Vec2& N, float ior, Vec2& result)
         {
-            float i_dot_n = Vec2::dot(incident, normal);
-            float k = 1.0f - refractionRatio * refractionRatio * (1.0f - i_dot_n * i_dot_n);
-            if (k < 0.0f)
+            // Since, I and N are normalized, dot(I, N) = cos(x1)
+            float cos_x1 = Vec2::dot(I, N);
+
+            // Calculates sin(x1) with trigonometric identity
+            float sin_x1_squared = 1.0f - cos_x1 * cos_x1;
+
+            // With Snell's law, calculates sin(x2)^2
+            float sin_x2_squared = ior * ior * sin_x1_squared;
+
+            // If it's greater than 1.0 it means that Snell's law fails
+            // and it tells us that we have total internal reflection
+            if (sin_x2_squared > 1.0f)
                 return false;
 
-            float a = refractionRatio * i_dot_n + sqrtf(k);
-            result.x = refractionRatio * incident.x - a * normal.x;
-            result.y = refractionRatio * incident.y - a * normal.y;
+            // Calculates cos(x2) with trigonometric identity
+            float cos_x2 = sqrtf(1.0f - sin_x2_squared);
+
+            // refracted is the linear combination of N and M.
+            // the vector is calculated with the simplified expression
+            // of the linear combination
+            result = N * (-ior * cos_x1 - cos_x2) + I * ior; 
             return true;
         }
+
 
         static float mix(float a, float b, float t)
         {

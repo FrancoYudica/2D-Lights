@@ -285,33 +285,6 @@ namespace Scenes
     }
 
 
-    static Nearest cup_scene(Vec2 pos, float time)
-    {
-        Nearest nearest;
-        Material white_light = Material::create_light({1.0f}, 1.0f);
-        Material mat0 = Material::create_light(Color<float>(250, 9, 71, 95) / 255.0f, 0.6f);
-        Material mat1 = Material::create_light(Color<float>(255, 0, 247, 99) / 255.0f, 1.2f);
-        Material mat4 = Material::create_light(Color<float>(245, 115, 64, 96) / 255.0f, 1.2f);
-        
-        // Central light
-        float moon = SDF::combine_subtract(
-            SDF::circle(pos, Vec2(0.0f, 0.4f), 0.6f),
-            SDF::circle(pos, Vec2(0.0f, 0.8f), 0.5f)
-        );
-        float body = SDF::box(pos, Vec2(0.0f), Vec2(0.25f, 0.3f));
-        float mouth = SDF::box(pos, Vec2(0.0f, -0.5f), Vec2(0.25f, 0.07f));
-
-        float eye1 = SDF::circle(pos, Vec2(-0.15f, 0.0f), 0.1f);
-        float eye2 = SDF::circle(pos, Vec2(0.15f, 0.0f), 0.1f);
-        float eyes = SDF::combine_union_s(eye1, eye2, 0.26f);
-        
-        _eval(eyes, white_light, nearest);
-        float skull = SDF::combine_union_s(moon, SDF::combine_union(body, mouth), 0.1f);
-        _eval(SDF::combine_subtract(skull, eyes), mat0, nearest);
-        return nearest;
-    }
-
-
     static Nearest rotative_lines(Vec2 pos, float time)
     {
         // Rotates 2 lines with different angular speed
@@ -596,6 +569,76 @@ namespace Scenes
             refractive_material,
             nearest
         );
+        return nearest;
+    }
+
+    static Nearest sample_scene(Vec2 pos, float time)
+    {
+        Nearest nearest;
+
+        Material purple_mtl = Material::create_light({0.9f, 0.4f, 1.0f, 1.0f}, 1.5f);
+        Material pink_mtl = Material::create_light({0.8f, 0.0f, 0.21f, 1.0f}, 1.0f);
+        Material opaque_mtl = Material::create_opaque();
+        Material reflective_mtl = Material::create_reflective(0.6f);
+        
+        // Lights
+        {
+            Material lights_material = Material::create_light({1.0f}, 1.0f);
+            // Top light    
+            _eval(SDF::box(pos, Vec2(0.0, 1.0f - 0.1f), Vec2(0.5f, 0.01f)), lights_material, nearest);
+
+            float x_light_distance = 2.0f;
+            _eval(SDF::line(pos, Vec2(-x_light_distance, -1.0f), Vec2(-x_light_distance, 1.0f), 0.05f), lights_material, nearest);
+            _eval(SDF::line(pos, Vec2(x_light_distance, -1.0f), Vec2(x_light_distance, 1.0f), 0.05f), lights_material, nearest);
+        }
+
+        // Smooth shape
+        {
+            float box_sd = SDF::box(pos, Vec2(0.0, 0.4f), Vec2(0.3f, 0.05f));
+
+            float circles_sd;
+            {
+                float circle_sd_0 = SDF::circle(pos, Vec2(0.3f, 0.4f), 0.1f);
+                float circle_sd_1 = SDF::circle(pos, Vec2(-0.25f, 0.3f), 0.15f);
+                circles_sd = SDF::combine_union(circle_sd_0, circle_sd_1);
+            }
+
+            float k = 0.08f;
+            float h = SDF::smooth_t(box_sd, circles_sd, k);
+
+            float d = SDF::combine_union_s(box_sd, circles_sd, k, h);
+            Material mix_mtl = Material::mix(purple_mtl, pink_mtl, h);
+            _eval(d, mix_mtl, nearest);
+        }
+
+        // Reflective edges
+        {
+            float box_sd_0 = SDF::line(pos, Vec2(-0.3f, -0.2), Vec2(0.3f, -0.2f), 0.15f);
+            float box_sd_1 = SDF::line(pos, Vec2(-0.65, 0.7), Vec2(-0.65, 0.1), 0.05f);
+            float box_sd_2 = SDF::line(pos, Vec2(0.65, 0.7), Vec2(0.65, 0.1), 0.05f);
+            
+            float boxes = SDF::combine_union(SDF::combine_union(box_sd_0, box_sd_1), box_sd_2);           
+            float circle_sd = SDF::circle(pos, Vec2(), 0.2f);
+            float line_sd = SDF::line(pos, Vec2(), Vec2(0.0f, -0.5f), 0.1f);
+
+            float subtract_sd = SDF::combine_union_s(circle_sd, line_sd, 0.1f);
+
+            _eval(SDF::combine_subtract(boxes, subtract_sd), reflective_mtl, nearest);
+        }
+        {
+            Vec2 origin(0.0f, -0.7f);
+            float offset = 0.5f;
+            Material refractive_material = Material::create_refractive(0.2f, 1.5f);
+
+            _eval(
+                SDF::combine_intersect(
+                    SDF::circle(pos, {origin.x, origin.y + offset}, 0.6f), 
+                    SDF::circle(pos, {origin.x, origin.y - offset}, 0.6f)
+                ),
+                refractive_material,
+                nearest
+            );
+        }
         return nearest;
     }
 

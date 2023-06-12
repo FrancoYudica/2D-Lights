@@ -12,4 +12,6 @@ file(GLOB SRC_HEADERS lights2d/lights2d.h lights2d/src/*.h)
 file(GLOB SRC_SOURCES lights2d/src/*.cpp)
 
 add_executable(${PROJECT_NAME} main.cpp ${STB_SOURCE} ${STB_HEADERS} ${SRC_SOURCES} ${SRC_HEADERS})
+target_compile_definitions(${PROJECT_NAME} PRIVATE PROJECT_DIRECTORY_PATH="${CMAKE_HOME_DIRECTORY}")
+
 target_include_directories(${PROJECT_NAME} PRIVATE "./stb")

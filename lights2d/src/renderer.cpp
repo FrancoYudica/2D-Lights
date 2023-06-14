@@ -30,7 +30,9 @@ namespace Lights2D
                     );
 
                     // Multi sampling - Samples a grid
-                    int sample_index = 0;
+                    //for (uint32_t sample = 0; sample < config.samples; sample++)
+                    //    accumulated += _sample(uv, sample);            
+                    uint32_t sample_index = 0;
                     for (uint32_t x_sample = 0; x_sample < sample_size; x_sample++)
                     {
                         for (uint32_t y_sample = 0; y_sample < sample_size; y_sample++)
@@ -47,11 +49,10 @@ namespace Lights2D
                             offset.y /= config.height;
 
                             // If false, disables offset
-                            offset *= config.sampling_offset;
+                            offset *= config.antialias;
                             accumulated += _sample(uv + offset, sample_index++);            
                         }
                     }
-
                     accumulated /= static_cast<float>(config.samples);
 
                     // Color<float> -> Color<uint8_t> is overwritten, and values are mapped [0, 1] to [0, 255] automatically
@@ -68,9 +69,11 @@ namespace Lights2D
 
     Color<float> Renderer::_ray_march(Vec2 origin, Vec2 direction, uint32_t depth)
     {
+        float t = 0.0f;
         for (uint32_t i = 0; i < config.ray_march_max_iterations; i++)
         {
-            Nearest nearest = sdf(origin, _time);
+            Vec2 point = origin + direction * t;
+            Nearest nearest = sdf(point, _time);
 
             float sign = nearest.distance > 0.0f ? 1.0f : -1.0f;
             float unsigned_distance = sign * nearest.distance;
@@ -79,12 +82,13 @@ namespace Lights2D
             {
                 // Adds the intensity
                 Color color = material.emission * material.emission_intensity;
+                Color<float> accumulated_color = color;
 
                 // Check for reflection and refraction
                 if (depth < config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
                 {
-                    Vec2 normal = this->gradient(origin);
 
+                    Vec2 normal = this->gradient(point);
                     // In case we are inside the object, flipping the normal gives us the correct result
                     normal *= sign;
 
@@ -94,11 +98,13 @@ namespace Lights2D
 
                         float ior = sign < 0.0f ? material.ior : 1.0f / material.ior;
                         Vec2 refracted;
-                        if (Utils::refract(Vec2::normalize(direction), Vec2::normalize(normal), ior, refracted))
+                        bool can_refract = Utils::refract(Vec2::normalize(direction), Vec2::normalize(normal), ior, refracted);
+                        if (can_refract)
                         {
                             // Moves the point to the other medium side
-                            Vec2 refracted_origin = origin - normal * OFFSET;
-                            color += _ray_march(refracted_origin, Vec2::normalize(refracted), depth + 1) * (1.0f - reflectivity);
+                            Vec2 refracted_origin = point - normal * OFFSET;
+                            Color refracted_color = _ray_march(refracted_origin, Vec2::normalize(refracted), depth + 1) * (1.0f - reflectivity);
+                            accumulated_color = refracted_color;
                         }
                         else
                         {
@@ -110,13 +116,18 @@ namespace Lights2D
                     {
                         Vec2 reflected = Utils::reflect(direction, normal);
                         Vec2 reflected_origin = origin + normal * OFFSET;
-                        color += _ray_march(reflected_origin, reflected, depth + 1) * reflectivity; 
+                        accumulated_color += _ray_march(reflected_origin, reflected, depth + 1) * reflectivity; 
                     }
 
                 }
-                return color;
+                // TODO - I think beer - lambert should be used once, and it is when the light leaves the object
+                // If we casted the ray inside the object
+                if (nearest.distance < 0.0f)
+                    return accumulated_color * Utils::beer_lambert(material.absorption, t);
+
+                return accumulated_color;
             }
-            origin += direction * unsigned_distance;
+            t += unsigned_distance;
         }
         return Color(0.0f);
     
@@ -128,6 +139,9 @@ namespace Lights2D
         origin.x *= config.aspect_ratio;
 
         float angle = 2.0f * PI * (sample_index + Utils::random()) / config.samples;
+        //float angle = 2.0f * PI * sample_index / config.samples;
+        //float angle = 2.0f * PI * (Utils::random()  + (sample_index) / config.samples);
+        //float angle = 2.0f * PI * Utils::random();
         Vec2 direction(cos(angle), sin(angle));
 
         Color color = _ray_march(origin, direction);

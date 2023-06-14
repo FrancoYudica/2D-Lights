@@ -19,14 +19,13 @@ static void render_frame_callback(std::shared_ptr<Image> image_buffer, uint32_t 
     std::string filepath = PROJECT_DIRECTORY_PATH;
     filepath += "/renders/";
     filepath += std::to_string(frame_index);
-    filepath += ".jpg";
-
-    stbi_write_jpg(
+    filepath += ".png";
+    bool status = stbi_write_png(
         filepath.c_str(),
         image_buffer->width,
         image_buffer->height,
-        4,
-        &image_buffer->buffer[0], image_buffer->width * sizeof(int)
+        3,
+        &image_buffer->buffer[0], image_buffer->width * 3
     );
 }
 
@@ -36,7 +35,7 @@ int main()
     // Creates FrameConfiguration
     uint32_t width = 512;
     uint32_t height = 512;
-    uint32_t samples_per_pixel = 128;
+    uint32_t samples_per_pixel = 23 * 23;
     uint32_t ray_tracing_depth = 3;
     uint32_t ray_marching_iterations = 64;
     FrameConfig frame_config = {
@@ -45,11 +44,10 @@ int main()
         samples_per_pixel,
         ray_tracing_depth,
         ray_marching_iterations,
-        static_cast<float>(width) / height, // Aspect ratio
         true // Enables sampling offset
     };
 
-    SequenceConfig sequence_config = {0.0f, 1.0f, 1.0f};
-    render_sequence(frame_config, sequence_config, Scenes::concave_lens, render_frame_callback);
+    SequenceConfig sequence_config = {0.0f, .50f, 1.0f};
+    render_sequence(frame_config, sequence_config, Scenes::convex_lens, render_frame_callback);
     return 0;
 }

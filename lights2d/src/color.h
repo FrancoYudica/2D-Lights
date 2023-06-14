@@ -9,12 +9,12 @@ namespace Lights2D
     struct Color
     {
         public:
-            T r, g, b, a;
+            T r, g, b;
 
         public:
-            Color() : r(0), g(0), b(0), a(0) {}
-            Color(T r, T g, T b, T a) : r(r), g(g), b(b), a(a) {}
-            Color(T val) : r(val), g(val), b(val), a(val) {}
+            Color() : r(0), g(0), b(0) {}
+            Color(T r, T g, T b) : r(r), g(g), b(b) {}
+            Color(T val) : r(val), g(val), b(val) {}
 
             static Color<T> clamp(const Color<T>& c, T min, T max)
             {
@@ -34,11 +34,6 @@ namespace Lights2D
                 else if (color.b > max)
                     color.b = max;
 
-                if (color.a < min)
-                    color.a = min;
-                else if (color.a > max)
-                    color.a = max;
-
                 return color;
             }
 
@@ -47,14 +42,13 @@ namespace Lights2D
                 return {
                     static_cast<uint8_t>(255.0f * r),
                     static_cast<uint8_t>(255.0f * g),
-                    static_cast<uint8_t>(255.0f * b),
-                    static_cast<uint8_t>(255.0f * a)
+                    static_cast<uint8_t>(255.0f * b)
                 };
             }
 
             Color<T> operator +(const Color& other) const
             {
-                return {r + other.r, g + other.g, b + other.b, a + other.a};
+                return {r + other.r, g + other.g, b + other.b};
             }
 
             void operator +=(const Color& other)
@@ -62,12 +56,11 @@ namespace Lights2D
                 r += other.r;
                 g += other.g;
                 b += other.b;
-                a += other.a;
             }
 
             Color<T> operator -(const Color& other) const
             {
-                return {r - other.r, g - other.g, b - other.b, a - other.a};
+                return {r - other.r, g - other.g, b - other.b};
             }
 
             void operator -=(const Color& other)
@@ -75,12 +68,11 @@ namespace Lights2D
                 r -= other.r;
                 g -= other.g;
                 b -= other.b;
-                a -= other.a;
             }
 
             Color<T> operator *(const Color& other) const
             {
-                return {r * other.r, g * other.g, b * other.b, a * other.a};
+                return {r * other.r, g * other.g, b * other.b};
             }
 
             void operator *=(const Color& other)
@@ -88,12 +80,11 @@ namespace Lights2D
                 r *= other.r;
                 g *= other.g;
                 b *= other.b;
-                a *= other.a;
             }
 
             Color<T> operator*(const float value) const
             {
-                return {value * r, value * g, value * b, value *a};
+                return {value * r, value * g, value * b};
             }   
 
             void operator*=(const float value)
@@ -101,12 +92,11 @@ namespace Lights2D
                 r *= value;
                 g *= value;
                 b *= value;
-                a *= value;
             }
 
             Color<T> operator/(const float value) const
             {
-                return {r / value, g / value, b / value, a / value};
+                return {r / value, g / value, b / value};
             }   
 
             void operator/=(const float value)
@@ -114,7 +104,6 @@ namespace Lights2D
                 r /= value;
                 g /= value;
                 b /= value;
-                a /= value;
             }
     };
 }

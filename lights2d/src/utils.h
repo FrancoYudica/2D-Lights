@@ -62,6 +62,15 @@ namespace Lights2D
             return true;
         }
 
+        static Color<float> beer_lambert(const Color<float>& color, float t)
+        {
+            return Color<float>(
+                exp(-color.r * t),
+                exp(-color.g * t),
+                exp(-color.b * t)
+            );
+        }
+
 
         static float mix(float a, float b, float t)
         {
@@ -77,11 +86,10 @@ namespace Lights2D
 
         static Color<float> mix(Color<float> a, Color<float> b, float t)
         {
-            return {
+            return Color<float>{
                 mix(a.r, b.r, t),
                 mix(a.g, b.g, t),
-                mix(a.b, b.b, t),
-                mix(a.a, b.a, t)
+                mix(a.b, b.b, t)
             };
         }
 
@@ -143,6 +151,9 @@ namespace Lights2D
         {
             return a > 0.0f ? 1.0f : 0.0f;
         }
+
+
+
     }
 }
 #endif

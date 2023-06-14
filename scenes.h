@@ -29,9 +29,9 @@ namespace Scenes
 
         Material white_mtl = Material::create_light({1.0f}, 2.0f);
         Material black_mtl = Material::create_reflective(0.5f);
-        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
-        Material light_purple_mtl = Material::create_light(Color(0.5f, 0.2f, 1.0f, 1.0f), 1.3f);
-        Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
+        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f), 1.3f);
+        Material light_purple_mtl = Material::create_light(Color(0.5f, 0.2f, 1.0f), 1.3f);
+        Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f), 1.3f);
 
         // Center circle
         _eval(SDF::circle(pos, Vec2(), 0.1f), purple_mtl, nearest);
@@ -49,7 +49,7 @@ namespace Scenes
         _eval(SDF::combine_subtract(planes, subtract), black_mtl, nearest);
 
         // LIGHTS
-        Vec2 box_size(0.1f, 0.05);
+        Vec2 box_size(0.1f, 0.05f);
         float box_light1 = SDF::box(pos, {-0.7, -1 + box_size.y}, box_size);
         float box_light2 = SDF::box(pos, {-0.7,  1 - box_size.y}, box_size);
         float box_light3 = SDF::box(pos, {+0.7, -1 + box_size.y}, box_size);
@@ -66,8 +66,8 @@ namespace Scenes
         Nearest nearest;
         Material white_mtl = Material::create_light({1.0f}, 2.0f);
         Material black_mtl = Material::create_reflective(0.5f);
-        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
-        Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
+        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f), 1.3f);
+        Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f), 1.3f);
 
         // Central light
         _eval(SDF::circle(pos, Vec2(), 0.1f), white_mtl, nearest);
@@ -105,13 +105,13 @@ namespace Scenes
     {
         Nearest nearest;
         Color<float> colors[7];
-        colors[0] = Color<float>(148, 0, 211, 255) / 255.0f;
-        colors[1] = Color<float>(75, 0, 130, 255) / 255.0f;
-        colors[2] = Color<float>(0, 0, 255, 255) / 255.0f;
-        colors[3] = Color<float>(0, 255, 0, 255) / 255.0f;
-        colors[4] = Color<float>(255, 255, 0, 255) / 255.0f;
-        colors[5] = Color<float>(255, 127, 0, 255) / 255.0f;
-        colors[6] = Color<float>(255, 0 , 0, 255) / 255.0f;
+        colors[0] = Color<float>(148, 0, 211) / 255.0f;
+        colors[1] = Color<float>(75, 0, 130) / 255.0f;
+        colors[2] = Color<float>(0, 0, 255) / 255.0f;
+        colors[3] = Color<float>(0, 255, 0) / 255.0f;
+        colors[4] = Color<float>(255, 255, 0) / 255.0f;
+        colors[5] = Color<float>(255, 127, 0) / 255.0f;
+        colors[6] = Color<float>(255, 0 , 0) / 255.0f;
 
         float segment_length = 0.7f;
         float box_height = 1.5f;
@@ -135,9 +135,9 @@ namespace Scenes
     static Nearest smooth_intensity_interpolation(Vec2 pos, float time)
     {
         Nearest nearest;
-        Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 2.0f);
-        Material purple_light_darker = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 0.7f);
-        Material green_light = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
+        Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f), 2.0f);
+        Material purple_light_darker = Material::create_light(Color(0.3f, 0.0f, .8f), 0.7f);
+        Material green_light = Material::create_light(Color(0.7f, 1.0f, .2f), 1.3f);
 
         // Central light
         float radius = 0.3f;
@@ -159,8 +159,8 @@ namespace Scenes
     static Nearest smooth_color_interpolation(Vec2 pos, float time)
     {
         Nearest nearest;
-        Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.2f);
-        Material red_light = Material::create_light(Color(1.0f, 0.0f, 0.443f, 1.0f), 1.2f);
+        Material purple_light = Material::create_light(Color(0.3f, 0.0f, .8f), 1.2f);
+        Material red_light = Material::create_light(Color(1.0f, 0.0f, 0.443f), 1.2f);
 
         float k_smooth_factor = 0.3f;
 
@@ -204,9 +204,9 @@ namespace Scenes
     static Nearest multiple_interpolations_0(Vec2 pos, float time)
     {
         Nearest nearest;
-        Material mat0 = Material::create_light(Color<float>(56, 192, 242, 255) / 255.0f, 1.0f);
-        Material mat1 = Material::create_light(Color<float>(58, 10, 200, 255) / 255.0f, 1.0f);
-        Material mat2 = Material::create_light(Color<float>(255, 10, 255, 255) / 255.0f, 1.0f);
+        Material mat0 = Material::create_light(Color<float>(56, 192, 242) / 255.0f, 1.0f);
+        Material mat1 = Material::create_light(Color<float>(58, 10, 200) / 255.0f, 1.0f);
+        Material mat2 = Material::create_light(Color<float>(255, 10, 255) / 255.0f, 1.0f);
         
         // Central light
         float obj0 = SDF::circle(pos, Vec2(0.2f), 0.2f);
@@ -236,11 +236,11 @@ namespace Scenes
     static Nearest multiple_interpolations(Vec2 pos, float time)
     {
         Nearest nearest;
-        Material mat0 = Material::create_light(Color<float>(56, 192, 242, 95) / 255.0f, 1.0f);
-        Material mat1 = Material::create_light(Color<float>(58, 252, 122, 99) / 255.0f, 1.0f);
-        Material mat2 = Material::create_light(Color<float>(194, 230, 64, 90) / 255.0f, 1.0f);
-        Material mat3 = Material::create_light(Color<float>(252, 198, 58, 99) / 255.0f, 1.0f);
-        Material mat4 = Material::create_light(Color<float>(245, 115, 64, 96) / 255.0f, 1.0f);
+        Material mat0 = Material::create_light(Color<float>(56, 192, 242) / 255.0f, 1.0f);
+        Material mat1 = Material::create_light(Color<float>(58, 252, 122) / 255.0f, 1.0f);
+        Material mat2 = Material::create_light(Color<float>(194, 230, 64) / 255.0f, 1.0f);
+        Material mat3 = Material::create_light(Color<float>(252, 198, 58) / 255.0f, 1.0f);
+        Material mat4 = Material::create_light(Color<float>(245, 115, 64) / 255.0f, 1.0f);
         
         // Central light
         float obj0 = SDF::circle(pos, Vec2(0.0f, 0.6f), 0.2f);
@@ -290,8 +290,8 @@ namespace Scenes
         // Rotates 2 lines with different angular speed
         Nearest nearest;
         Material white_light = Material::create_light({1.0f}, 1.0f);
-        Material mat0 = Material::create_light(Color<float>(250, 9, 71, 95) / 255.0f, 1.2f);
-        Material mat1 = Material::create_light(Color<float>(100, 0, 247, 99) / 255.0f, 1.2f);
+        Material mat0 = Material::create_light(Color<float>(250, 9, 71) / 255.0f, 1.2f);
+        Material mat1 = Material::create_light(Color<float>(100, 0, 247) / 255.0f, 1.2f);
         
         float angle1 = PI * time;
         float angle2 = 2.0f * PI * time;
@@ -338,10 +338,10 @@ namespace Scenes
         // Rotates 2 lines with different angular speed
         Nearest nearest;
         Material white_light = Material::create_light({1.0f}, 1.2f);
-        Material mat0 = Material::create_light(Color<float>(255, 179, 38, 255) / 255.0f, 1.2f);
-        Material mat1 = Material::create_light(Color<float>(255, 81, 38, 255) / 255.0f, 1.2f);
-        Material mat2 = Material::create_light(Color<float>(38, 255, 165, 255) / 255.0f, 1.2f);
-        Material mat3 = Material::create_light(Color<float>(38, 219, 255, 255) / 255.0f, 1.2f);
+        Material mat0 = Material::create_light(Color<float>(255, 179, 38) / 255.0f, 1.2f);
+        Material mat1 = Material::create_light(Color<float>(255, 81, 38) / 255.0f, 1.2f);
+        Material mat2 = Material::create_light(Color<float>(38, 255, 165) / 255.0f, 1.2f);
+        Material mat3 = Material::create_light(Color<float>(38, 219, 255) / 255.0f, 1.2f);
 
         float top_light = SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(0.5f, 0.01f));
 
@@ -479,12 +479,12 @@ namespace Scenes
         return nearest;
     }
 
-    static Nearest refraction_test4(Vec2 pos, float time)
+    static Nearest refractive_metaballs(Vec2 pos, float time)
     {
         // REFRACTION OF CIRCLE
         Nearest nearest;
         Material white_light = Material::create_light({1.0f}, 2.0f);
-        Material yellow_light = Material::create_light(Color<float>(252, 241, 177, 255) / 255.0f, 3.0f);
+        Material yellow_light = Material::create_light(Color<float>(252, 241, 177) / 255.0f, 3.0f);
         _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
         _eval(SDF::circle(pos, Vec2(1.3f, 0.0f), 0.2f), yellow_light, nearest);
 
@@ -502,19 +502,40 @@ namespace Scenes
         return nearest;
     }
 
+
+    static Nearest beer_lambert_test(Vec2 pos, float time)
+    {
+        // REFRACTION OF CIRCLE
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        _eval(SDF::line(pos, Vec2(-1.0f, 0.0f), Vec2(1.0f, 1.0f), 0.02f), white_light, nearest);
+        Material refractive_material = Material::create_refractive(0.0f, 1.4f, Color<float>(4, 4, 1.0f));
+        _eval(SDF::box(pos, Vec2(0.1, -0.1), Vec2(.4f, 0.2f)), refractive_material, nearest);
+        return nearest;
+    }
+
+    static Nearest sampling_test(Vec2 pos, float time)
+    {
+        // REFRACTION OF CIRCLE
+        Nearest nearest;
+        Material white_light = Material::create_light({1.0f}, 2.0f);
+        _eval(SDF::line(pos, Vec2(-1.0f, 0.0f), Vec2(1.0f, 0.0f), 0.02f), white_light, nearest);
+        return nearest;
+    }
+
     static Nearest shape_interpolation(Vec2 pos, float time)
     {
         // REFRACTION OF CIRCLE
         Nearest nearest;
         Material white_light = Material::create_light({1.0f}, 2.0f);
-        Material yellow_light = Material::create_light(Color<float>(252, 241, 177, 255) / 255.0f, 3.0f);
+        Material yellow_light = Material::create_light(Color<float>(252, 241, 177) / 255.0f, 3.0f);
         _eval(SDF::box(pos, Vec2(0.0f, 1.2f), Vec2(1.0f, 0.01f)), white_light, nearest);
         _eval(SDF::circle(pos, Vec2(1.3f, 0.0f), 0.2f), yellow_light, nearest);
 
         float pentagon = SDF::pentagon(pos, 0.2f);
         float heart = SDF::heart(pos, Vec2());
-        Material pentagon_mtl = Material::create_light(Color<float>(0, 153, 255, 255) / 255.0f, 1.4f);
-        Material heart_mtl = Material::create_light(Color<float>(255, 77, 0, 255) / 255.0f, 1.4f);
+        Material pentagon_mtl = Material::create_light(Color<float>(0, 153, 255) / 255.0f, 1.4f);
+        Material heart_mtl = Material::create_light(Color<float>(255, 77, 0) / 255.0f, 1.4f);
 
         float t = sin(time * PI);
 
@@ -576,8 +597,8 @@ namespace Scenes
     {
         Nearest nearest;
 
-        Material purple_mtl = Material::create_light({0.9f, 0.4f, 1.0f, 1.0f}, 1.5f);
-        Material pink_mtl = Material::create_light({0.8f, 0.0f, 0.21f, 1.0f}, 1.0f);
+        Material purple_mtl = Material::create_light({0.9f, 0.4f, 1.0f}, 1.5f);
+        Material pink_mtl = Material::create_light({0.8f, 0.0f, 0.21f}, 1.0f);
         Material opaque_mtl = Material::create_opaque();
         Material reflective_mtl = Material::create_reflective(0.6f);
         
@@ -648,8 +669,8 @@ namespace Scenes
         Nearest nearest;
         Material white_mtl = Material::create_light({1.0f}, 2.0f);
         Material black_mtl = Material::create_reflective(0.5f);
-        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f, 1.0f), 1.3f);
-        Material green_mtl = Material::create_light(Color(0.7f, 1.0f, .2f, 1.0f), 1.3f);
+        Material purple_mtl = Material::create_light(Color(0.3f, 0.0f, .8f), 1.3f);
+        Material green_mtl = Material::create_light(Color(0.7f, .2f, 1.0f), 1.3f);
         
         //_eval(SDF::circle(pos, Vec2(0.3f, 0.6f), 0.2f), white_mtl, nearest);
         //_eval(SDF::box(pos, {-0.4, -0.4}, {0.1, 0.1}), purple_mtl, nearest);

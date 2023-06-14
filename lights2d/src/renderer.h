@@ -23,11 +23,33 @@ namespace Lights2D
     struct FrameConfig
     {
         uint32_t width, height;                 // Output image size
-        uint32_t samples;                       // For coherent results, samples should be an integer power of 2, 2^n
+        uint32_t samples;                       // For coherent results, samples should be an integer power of 2, as n^2. This is super important
         uint32_t max_recursion_depth;           // Max depth for ray bounces
         uint32_t ray_march_max_iterations;      // If the images produced have "black edges / artifacts" probably increasing this attribute would give better results 
         float aspect_ratio;                     // Should be manually set width / height
-        bool sampling_offset;                   // Recommended if smooth edges are desired
+        bool antialias;                         // Recommended if smooth edges are desired
+
+        FrameConfig(
+            uint32_t width,
+            uint32_t height,
+            uint32_t samples,
+            uint32_t max_recursion_depth,
+            uint32_t ray_march_max_iterations,
+            bool antialias
+        ) :
+            width(width),
+            height(height),
+            samples(samples),
+            max_recursion_depth(max_recursion_depth),
+            ray_march_max_iterations(ray_march_max_iterations),
+            aspect_ratio(static_cast<float>(width) / static_cast<float>(height)),
+            antialias(antialias)
+            {
+                uint32_t sample_size = static_cast<uint32_t>(std::sqrt(samples));
+                if (sample_size * sample_size != samples)
+                    std::cout << "WARNING: Samples should be the square of a number n^2" << std::endl;
+            }
+
     };
 
     // Function pointer type definition. This function should be given as an argument to the constructor of the renderer

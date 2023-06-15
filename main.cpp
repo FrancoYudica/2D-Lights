@@ -48,6 +48,6 @@ int main()
     };
 
     SequenceConfig sequence_config = {0.0f, .50f, 1.0f};
-    render_sequence(frame_config, sequence_config, Scenes::convex_lens, render_frame_callback);
+    render_sequence(frame_config, sequence_config, Scenes::refractive_metaballs, render_frame_callback);
     return 0;
 }

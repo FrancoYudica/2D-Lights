@@ -35,6 +35,14 @@ namespace Lights2D
             return incident - normal * (2.0f * Vec2::dot(incident, normal));
         }
 
+        static float reflectance(float cos_angle, float ior)
+        {
+            // Use Schlick's approximation for reflectance.
+            auto r0 = (1-ior) / (1+ior);
+            r0 = r0*r0;
+            return r0 + (1-r0)*pow((1 - cos_angle),5);
+        }
+
 
         static bool refract(const Vec2& I, const Vec2& N, float ior, Vec2& result)
         {

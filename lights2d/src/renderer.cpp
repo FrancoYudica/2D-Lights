@@ -55,7 +55,7 @@ namespace Lights2D
                     }
                     accumulated /= static_cast<float>(config.samples);
 
-                    // Color<float> -> Color<uint8_t> is overwritten, and values are mapped [0, 1] to [0, 255] automatically
+                    // Operator overload cast to Color<uint8_t>, values are mapped [0, 1] to [0, 255] automatically
                     Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
                     img->set_pixel(x, y, byte_color);
                 }
@@ -77,59 +77,74 @@ namespace Lights2D
 
             float sign = nearest.distance > 0.0f ? 1.0f : -1.0f;
             float unsigned_distance = sign * nearest.distance;
-            Material& material = nearest.mtl;
+
             if (unsigned_distance < MARCH_HIT_DIST)
-            {
-                // Adds the intensity
-                Color color = material.emission * material.emission_intensity;
-                Color<float> accumulated_color = color;
+                return _hit(origin, direction, t, nearest, depth);
 
-                // Check for reflection and refraction
-                if (depth < config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
-                {
-
-                    Vec2 normal = this->gradient(point);
-                    // In case we are inside the object, flipping the normal gives us the correct result
-                    normal *= sign;
-
-                    float reflectivity = material.reflectivity;
-                    if (material.ior > 0.0f)
-                    {
-
-                        float ior = sign < 0.0f ? material.ior : 1.0f / material.ior;
-                        Vec2 refracted;
-                        bool can_refract = Utils::refract(Vec2::normalize(direction), Vec2::normalize(normal), ior, refracted);
-                        if (can_refract)
-                        {
-                            // Moves the point to the other medium side
-                            Vec2 refracted_origin = point - normal * OFFSET;
-                            Color refracted_color = _ray_march(refracted_origin, Vec2::normalize(refracted), depth + 1) * (1.0f - reflectivity);
-                            accumulated_color = refracted_color;
-                        }
-                        else
-                        {
-                            // Total internal reflection
-                            reflectivity = 1.0f;
-                        }
-                    }
-                    if (reflectivity > 0.0f)
-                    {
-                        Vec2 reflected = Utils::reflect(direction, normal);
-                        Vec2 reflected_origin = origin + normal * OFFSET;
-                        accumulated_color += _ray_march(reflected_origin, reflected, depth + 1) * reflectivity; 
-                    }
-
-                }
-                // TODO - I think beer - lambert should be used once, and it is when the light leaves the object
-                // If we casted the ray inside the object
-                if (nearest.distance < 0.0f)
-                    return accumulated_color * Utils::beer_lambert(material.absorption, t);
-
-                return accumulated_color;
-            }
             t += unsigned_distance;
         }
         return Color(0.0f);
+    
+    }
+
+    Color<float> Renderer::_hit(Vec2 origin, Vec2 direction, float t, const Nearest& nearest, uint32_t depth)
+    {
+        const Material& material = nearest.mtl;
+        Color color = material.emission * material.emission_intensity;
+        bool inside_object = nearest.distance <= 0.0f;
+        // Check for reflection and refraction
+        if (depth < config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
+        {
+            Vec2 point = origin + direction * t;
+
+            // Gets the gradient and flips if necessary to get the normal
+            Vec2 normal = Vec2::normalize(gradient(point));
+            if (inside_object)
+                normal *= -1.0f;
+
+            float reflectance = material.reflectivity;
+            if (material.ior > 0.0f)
+            {
+
+                float ior = inside_object ? material.ior : 1.0f / material.ior;
+                Vec2 refracted;
+                bool can_refract = Utils::refract(direction, normal, ior, refracted);
+                if (can_refract)
+                {
+                    // Updates reflectance - Only if it can refract
+                    float cos_angle = Utils::clamp(Vec2::dot(Vec2::flip(direction), normal), 0.0f, 1.0f);
+                    reflectance = Utils::reflectance(cos_angle, ior);
+
+                    // Offsets the origin inside the object
+                    Vec2 refracted_origin = point - normal * OFFSET;
+
+                    Color refracted_color = _ray_march(refracted_origin, Vec2::normalize(refracted), depth + 1);
+
+                    // Refracts the amount of light that isn't reflected
+                    color += refracted_color * (1.0f - reflectance);
+                }       
+                else
+                {
+                    // Total internal reflection
+                    reflectance = 1.0f;
+                }
+            }
+            if (reflectance > 0.0f)
+            {
+                Vec2 reflected = Utils::reflect(direction, normal);
+                // Offsets the origin away of the surface
+                Vec2 reflected_origin = point + normal * OFFSET;
+                    
+                Color reflected_color = _ray_march(reflected_origin, Vec2::normalize(reflected), depth + 1);
+                color += reflected_color * reflectance; 
+            }
+        }
+
+        // If we casted the ray inside the object, apply material absorption (Beer Lambert)
+        if (inside_object)
+            return color * Utils::beer_lambert(material.absorption, t);
+
+        return color;
     
     }
 

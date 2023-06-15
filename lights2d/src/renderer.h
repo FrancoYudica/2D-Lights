@@ -86,6 +86,7 @@ namespace Lights2D
         private:
             Color<float> _sample(Vec2 uv, uint32_t sample_index);
             Color<float> _ray_march(Vec2 origin, Vec2 direction, uint32_t depth=0);
+            Color<float> _hit(Vec2 origin, Vec2 direction, float t, const Nearest& nearest, uint32_t depth=0);
         private:
             float _time;
     };

@@ -48,16 +48,14 @@ namespace Lights2D
         }
         static Material create_refractive(float reflectivity, float ior, Color<float> absorption)
         {
-            auto mtl = Material(Color(0.0f), Color(0.0f), 0.0f, reflectivity, ior);
-            mtl.absorption = absorption;
-            return mtl;
+            return Material(Color(0.0f), absorption, 0.0f, reflectivity, ior);
         }
-
 
         static Material mix(const Material& m1, const Material& m2, float t)
         {
             return Material(
                 Utils::mix(m1.emission, m2.emission, t),
+                Utils::mix(m1.absorption, m2.absorption, t),
                 Utils::mix(m1.emission_intensity, m2.emission_intensity, t),
                 Utils::mix(m1.reflectivity, m2.reflectivity, t),
                 Utils::mix(m1.ior, m2.ior, t)
@@ -65,7 +63,7 @@ namespace Lights2D
         }
         private:
             // Black material
-            Material(Color<float> e, Color<float> a, float intensity, float ref, float ior=0.0f)
+            Material(Color<float> e, Color<float> a, float intensity, float ref, float ior)
             :
             emission(e), 
             absorption(a),

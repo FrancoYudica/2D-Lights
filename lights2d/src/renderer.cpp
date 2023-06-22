@@ -29,31 +29,19 @@ namespace Lights2D
                         1.0f - static_cast<float>(y) / config.height
                     );
 
-                    // Multi sampling - Samples a grid
-                    //for (uint32_t sample = 0; sample < config.samples; sample++)
-                    //    accumulated += _sample(uv, sample);            
-                    uint32_t sample_index = 0;
-                    for (uint32_t x_sample = 0; x_sample < sample_size; x_sample++)
+                    for (uint32_t sample = 0; sample < config.samples; sample++)
                     {
-                        for (uint32_t y_sample = 0; y_sample < sample_size; y_sample++)
-                        {
-                            // Adds offset, this way samples from the sample pixel are not in the same position inside the pixel
-                            Vec2 offset(
-                                static_cast<float>(x_sample),
-                                static_cast<float>(y_sample)
-                                );
-                            offset.x /= sample_size;
-                            offset.y /= sample_size;
-                            offset = offset - 0.5f;
-                            offset.x /= config.width;
-                            offset.y /= config.height;
-
-                            // If false, disables offset
-                            offset *= config.antialias;
-                            accumulated += _sample(uv + offset, sample_index++);            
-                        }
+                        // Gaussian antialiasing
+                        Vec2 offset(
+                            Utils::random() / config.width,
+                            Utils::random() / config.height
+                        );
+                        accumulated += _sample(uv + offset * config.antialias, sample);     
                     }
                     accumulated /= static_cast<float>(config.samples);
+
+                    // Applies gamma correction
+                    accumulated = Utils::gamma_log(accumulated);
 
                     // Operator overload cast to Color<uint8_t>, values are mapped [0, 1] to [0, 255] automatically
                     Color<uint8_t> byte_color = (Color<uint8_t>)Color<float>::clamp(accumulated, 0, 1.0f);
@@ -72,12 +60,16 @@ namespace Lights2D
         float t = 0.0f;
         for (uint32_t i = 0; i < config.ray_march_max_iterations; i++)
         {
+            
             Vec2 point = origin + direction * t;
+
+            // Nearest data with sdf
             Nearest nearest = sdf(point, _time);
 
             float sign = nearest.distance > 0.0f ? 1.0f : -1.0f;
             float unsigned_distance = sign * nearest.distance;
 
+            // Hit
             if (unsigned_distance < MARCH_HIT_DIST)
                 return _hit(origin, direction, t, nearest, depth);
 
@@ -89,12 +81,18 @@ namespace Lights2D
 
     Color<float> Renderer::_hit(Vec2 origin, Vec2 direction, float t, const Nearest& nearest, uint32_t depth)
     {
+       
         const Material& material = nearest.mtl;
+
+        // Color of the intersected material
         Color color = material.emission * material.emission_intensity;
+
         bool inside_object = nearest.distance <= 0.0f;
+
         // Check for reflection and refraction
-        if (depth < config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
+        if (depth <= config.max_recursion_depth && (material.reflectivity > 0.0f || material.ior > 0.0f))
         {
+
             Vec2 point = origin + direction * t;
 
             // Gets the gradient and flips if necessary to get the normal
@@ -125,10 +123,11 @@ namespace Lights2D
                 }       
                 else
                 {
-                    // Total internal reflection
+                    // Snell's law breaks - total internal reflection
                     reflectance = 1.0f;
                 }
             }
+
             if (reflectance > 0.0f)
             {
                 Vec2 reflected = Utils::reflect(direction, normal);
@@ -140,7 +139,7 @@ namespace Lights2D
             }
         }
 
-        // If we casted the ray inside the object, apply material absorption (Beer Lambert)
+        // If we casted the ray inside the object, apply material absorption (Beer - Lambert)
         if (inside_object)
             return color * Utils::beer_lambert(material.absorption, t);
 
@@ -153,6 +152,7 @@ namespace Lights2D
         Vec2 origin = (uv - 0.5f) * 2.0f;
         origin.x *= config.aspect_ratio;
 
+        // Jittered sampling
         float angle = 2.0f * PI * (sample_index + Utils::random()) / config.samples;
         //float angle = 2.0f * PI * sample_index / config.samples;
         //float angle = 2.0f * PI * (Utils::random()  + (sample_index) / config.samples);

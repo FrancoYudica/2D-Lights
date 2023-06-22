@@ -30,6 +30,26 @@ namespace Lights2D
             return {cos(angle), sin(angle)};
         }
 
+        static Color<float> gamma_log(const Color<float>& color)
+        {
+            constexpr float inv_gamma = 1.0f / 2.2f;
+            return {
+                powf(color.r, inv_gamma),
+                powf(color.g, inv_gamma),
+                powf(color.b, inv_gamma)
+            };
+        }
+
+        static Color<float> gamma_exp(const Color<float>& color)
+        {
+            float gamma = 2.2f;
+            return {
+                powf(color.r, gamma),
+                powf(color.g, gamma),
+                powf(color.b, gamma)
+            };
+        }
+
         static Vec2 reflect(Vec2 incident, Vec2 normal)
         {
             return incident - normal * (2.0f * Vec2::dot(incident, normal));

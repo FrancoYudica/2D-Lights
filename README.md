@@ -5,17 +5,18 @@ It's an offline 2D Light renderer. Uses a mix of Ray Marching and Path tracing t
 
 ## Features
 
-- Multiple primitives
-- Materials:
+### Multiple primitives
+### Materials
+Primitives can have materials, with the following properties
+
     - Emission
     - Intensity
-    - Reflectivity
+    - Reflection
+    - Refraction
+    - Beer Lambert absorption
 
-- Path tracing:
-    - Reflections
-    - Refractions
+### Output:
 
-- Outputs:
-    -  .jpg image
-    -  Frame sequences, can generate a sequence of images that when joined make a video
+The renderer output an Image object, that holds the 24 bit RGB buffer. Then the user should provide the on_render_callback, and if desired the image buffer can be stored on disk with STB
 
+There is also the possibility of generating image sequences, that when joined make a video

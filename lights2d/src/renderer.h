@@ -28,7 +28,7 @@ namespace Lights2D
         uint32_t ray_march_max_iterations;      // If the images produced have "black edges / artifacts" probably increasing this attribute would give better results 
         float aspect_ratio;                     // Should be manually set width / height
         bool antialias;                         // Recommended if smooth edges are desired
-
+        float gamma;
         FrameConfig(
             uint32_t width,
             uint32_t height,
@@ -43,13 +43,9 @@ namespace Lights2D
             max_recursion_depth(max_recursion_depth),
             ray_march_max_iterations(ray_march_max_iterations),
             aspect_ratio(static_cast<float>(width) / static_cast<float>(height)),
-            antialias(antialias)
-            {
-                uint32_t sample_size = static_cast<uint32_t>(std::sqrt(samples));
-                if (sample_size * sample_size != samples)
-                    std::cout << "WARNING: Samples should be the square of a number n^2" << std::endl;
-            }
-
+            antialias(antialias),
+            gamma(2.2f)
+            {}
     };
 
     // Function pointer type definition. This function should be given as an argument to the constructor of the renderer

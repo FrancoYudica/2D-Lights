@@ -23,7 +23,7 @@ The renderer uses ray marching, that's why it can render multiple shapes:
 Materials determine how an object interacts with light.
 
 - ***Emission and intensity***
-- ***Reflectance***: Schlick's aproximation of Fresnel equations
+- ***Reflectance***: Schlick's approximation of Fresnel equations
 - ***Refraction***: Snell's law and total internal reflection
 - ***Absorption***: Beer Lambert
 
@@ -34,12 +34,11 @@ The renderer outputs an Image object, that holds the 24 bit RGB buffer. Then on_
 There is also the possibility of generating image sequences, that when joined make a video
 
 ## Goal
-The main goal of this project was to learn about PBR (Phisically Based Rendering) in a simple environment, where no GPU and 3D graphics is required. 
+The main goal of this project was to learn about PBR (Physically Based Rendering) in a simple environment, where no GPU and 3D graphics is required. 
 
 ## Samples
 
 ![ ](renders/video/metaballs/metaballs.mp4)
-![ ](renders/video/metaballs/seq/0.png)
 
 
 ### Solid objects

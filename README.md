@@ -42,7 +42,7 @@ The main goal of this project was to learn about PBR (Physically Based Rendering
 
 ![ ](renders/samples/light_intensity_interpolation.png)
 ![ ](renders/samples/color_interpolation.png)
-![ ](renders/samples/metaballs1.png)
+![ ](renders/samples/metaballs.png)
 
 #### Caustics effect
 

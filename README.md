@@ -38,9 +38,6 @@ The main goal of this project was to learn about PBR (Physically Based Rendering
 
 ## Samples
 
-![ ](renders/video/metaballs/metaballs.mp4)
-
-
 ### Solid objects
 
 ![ ](renders/samples/light_intensity_interpolation.png)
@@ -79,4 +76,6 @@ Semicircular:
 
 ![ ](renders/samples/glass_absorption.png)
 
+## Video
+https://github.com/FrancoYudica/2D-Lights/assets/56238054/31cf1045-c06c-467e-b1f1-9d66fe156f23
 

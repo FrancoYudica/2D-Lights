@@ -27,6 +27,12 @@ Materials determine how an object interacts with light.
 - ***Refraction***: Snell's law and total internal reflection
 - ***Absorption***: Beer Lambert
 
+## Renderer
+- Multithreaded
+- Gaussian antialiasing
+- Gamma correction 2.2
+
+
 ## Outputs
 
 The renderer outputs an Image object, that holds the 24 bit RGB buffer. Then on_render_callback, stores *.png* images using STB

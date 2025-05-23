@@ -14,4 +14,8 @@ file(GLOB SRC_SOURCES lights2d/src/*.cpp)
 add_executable(${PROJECT_NAME} main.cpp ${STB_SOURCE} ${STB_HEADERS} ${SRC_SOURCES} ${SRC_HEADERS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE PROJECT_DIRECTORY_PATH="${CMAKE_HOME_DIRECTORY}")
 
+find_package(TBB REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
+
+
 target_include_directories(${PROJECT_NAME} PRIVATE "./stb")
